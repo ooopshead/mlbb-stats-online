@@ -751,3 +751,311 @@ body.dark-mode .suggestion-item:hover { color: #1c2128; }
     height: 28px;
     border-radius: 6px;
 }
+/* --- Стили для модального окна анализа драфта --- */
+.analysis-body {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.analysis-section h3 {
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 8px;
+}
+
+.key-factors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.key-factor-card {
+    background-color: var(--bg-light);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.key-factor-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--text-muted-light);
+}
+
+.key-factor-card .hero-cell {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.key-factor-card .hero-cell img {
+    width: 40px;
+    height: 40px;
+}
+
+.key-factor-card .stat {
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .analysis-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.team-analysis-column .team-title-blue { color: #3498db; }
+.team-analysis-column .team-title-red { color: #e74c3c; }
+
+.hero-analysis-card {
+    background-color: var(--bg-light);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.hero-analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.hero-analysis-header img {
+    width: 40px;
+    height: 40px;
+}
+
+.analysis-details h5 {
+    font-size: 14px;
+    color: var(--text-muted-light);
+    margin: 16px 0 8px 0;
+}
+
+.analysis-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+}
+
+.analysis-details li {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.analysis-details .hero-cell {
+    gap: 8px;
+    font-weight: 500;
+}
+
+.analysis-details .hero-cell img {
+    width: 24px;
+    height: 24px;
+}
+
+.stat-value.win { color: var(--win-light); }
+.stat-value.loss { color: var(--loss-light); }
+.stat-value.neutral { color: var(--text-muted-light); }
+/* --- Дополнительные стили для анализа драфта --- */
+.verdict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    text-align: center;
+}
+
+.verdict-card {
+    background-color: var(--bg-light);
+    padding: 16px;
+    border-radius: var(--border-radius);
+}
+
+.verdict-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--text-muted-light);
+}
+
+.verdict-card .value {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.hero-analysis-subheader {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-muted-light);
+    margin: -8px 0 12px 0;
+    text-align: center;
+    border-bottom: 1px dashed var(--border-light);
+    padding-bottom: 8px;
+}
+/* --- Стили для модального окна анализа драфта --- */
+.analysis-body {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.analysis-section h3 {
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 8px;
+}
+
+.key-factors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.key-factor-card {
+    background-color: var(--bg-light);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.key-factor-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--text-muted-light);
+}
+
+.key-factor-card .hero-cell {
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.key-factor-card .hero-cell img {
+    width: 40px;
+    height: 40px;
+}
+
+.key-factor-card .stat {
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .analysis-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.team-analysis-column .team-title-blue { color: #3498db; }
+.team-analysis-column .team-title-red { color: #e74c3c; }
+
+.hero-analysis-card {
+    background-color: var(--bg-light);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.hero-analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.hero-analysis-header img {
+    width: 40px;
+    height: 40px;
+}
+
+.analysis-details h5 {
+    font-size: 14px;
+    color: var(--text-muted-light);
+    margin: 16px 0 8px 0;
+}
+
+.analysis-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+}
+
+.analysis-details li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.analysis-details .hero-cell {
+    gap: 8px;
+    font-weight: 500;
+}
+
+.analysis-details .hero-cell img {
+    width: 24px;
+    height: 24px;
+}
+
+.stat-value {
+    font-weight: 700;
+}
+.stat-value.win { color: var(--win-light); }
+.stat-value.loss { color: var(--loss-light); }
+.stat-value.neutral { color: var(--text-muted-light); }
+
+
+/* --- Новые стили для вердикта --- */
+.verdict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    text-align: center;
+}
+
+.verdict-card {
+    background-color: var(--bg-light);
+    padding: 16px;
+    border-radius: var(--border-radius);
+}
+
+.verdict-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--text-muted-light);
+}
+
+.verdict-card .value {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.hero-analysis-subheader {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-muted-light);
+    margin: -8px 0 12px 0;
+    text-align: center;
+    border-bottom: 1px dashed var(--border-light);
+    padding-bottom: 8px;
+}
