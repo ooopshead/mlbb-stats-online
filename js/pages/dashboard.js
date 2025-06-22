@@ -16,20 +16,19 @@ export async function initDashboardPage() {
     const patchList = document.getElementById('patch-list');
     const addPatchForm = document.getElementById('add-patch-form');
     
-    let userSettings = {}; // Кэшируем настройки пользователя
+    let userSettings = {};
 
     const renderTeamInfo = () => {
         const teamInfo = userSettings.team_info || { name: 'Моя Команда', roster: [] };
         teamNameDisplay.textContent = teamInfo.name;
         rosterList.innerHTML = '';
-        if (!teamInfo.roster || teamInfo.roster.length === 0) {
+        (teamInfo.roster || []).forEach((player, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<div class="player-info"><span class="player-nickname">${player.nickname}</span><span class="hero-role-tag role-${player.role.toLowerCase()}">${player.role}</span></div><button class="remove-btn" data-index="${index}" title="Удалить игрока">&times;</button>`;
+            rosterList.appendChild(li);
+        });
+        if (rosterList.innerHTML === '') {
             rosterList.innerHTML = '<li class="text-muted">Добавьте игроков в состав</li>';
-        } else {
-            teamInfo.roster.forEach((player, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<div class="player-info"><span class="player-nickname">${player.nickname}</span><span class="hero-role-tag role-${player.role.toLowerCase()}">${player.role}</span></div><button class="remove-btn" data-index="${index}" title="Удалить игрока">&times;</button>`;
-                rosterList.appendChild(li);
-            });
         }
     };
 
@@ -37,15 +36,14 @@ export async function initDashboardPage() {
         const patches = userSettings.patches || [];
         patches.sort().reverse();
         patchList.innerHTML = '';
-        if (patches.length === 0) {
-            patchList.innerHTML = '<li class="text-muted">Добавьте патчи</li>';
-            return;
-        }
         patches.forEach(patch => {
             const li = document.createElement('li');
             li.innerHTML = `<span>${patch}</span><button class="remove-btn" data-patch="${patch}" title="Удалить патч">&times;</button>`;
             patchList.appendChild(li);
         });
+        if (patchList.innerHTML === '') {
+            patchList.innerHTML = '<li class="text-muted">Добавьте патчи</li>';
+        }
     };
 
     const renderDashboardStats = (matches) => {
@@ -57,7 +55,7 @@ export async function initDashboardPage() {
 
         const roleHeroStats = {};
         matches.forEach(m => {
-            m.picks?.our_team.forEach(p => {
+            (m.picks?.our_team || []).forEach(p => {
                 if (p.role && p.hero) {
                     if (!roleHeroStats[p.role]) roleHeroStats[p.role] = {};
                     if (!roleHeroStats[p.role][p.hero]) roleHeroStats[p.role][p.hero] = { picks: 0, wins: 0 };
@@ -186,17 +184,15 @@ export async function initDashboardPage() {
         }
     });
 
-    // Загрузка всех данных и рендеринг
     overallStatsContent.innerHTML = '<div class="loading-spinner"></div>';
     roleStatsContainer.innerHTML = '';
     
-    // Запускаем оба запроса параллельно для скорости
     const [matches, settings] = await Promise.all([
         dataService.getMatches(),
         dataService.getUserSettings()
     ]);
     
-    userSettings = settings; // Сохраняем настройки в кэш
+    userSettings = settings;
 
     renderTeamInfo();
     renderPatches();

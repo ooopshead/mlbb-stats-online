@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js';
+import * as ui from './ui.js';
 
 // --- ФУНКЦИИ ДЛЯ РАБОТЫ С МАТЧАМИ ---
 
@@ -16,7 +17,12 @@ export async function getMatches() {
     return data.map(match => ({
         id: match.id,
         date: match.created_at,
-        ...match,
+        opponent_team: match.opponent_team,
+        match_type: match.match_type,
+        patch: match.patch,
+        our_team_side: match.our_team_side,
+        result: match.result,
+        notes: match.notes,
         ...match.draft_data
     }));
 }
@@ -39,7 +45,7 @@ export async function addMatch(matchData) {
 }
 
 export async function updateMatch(matchId, updatedData) {
-    const { bans, picks, id, date, user_id, ...mainData } = updatedData;
+    const { bans, picks, id, date, ...mainData } = updatedData;
     const draft_data = { bans, picks };
 
     const { data, error } = await supabase
@@ -65,11 +71,6 @@ export async function deleteMatch(matchId) {
     return true;
 }
 
-/**
- * ИСПРАВЛЕНО: Функция теперь не только импортирует матчи, но и возвращает настройки для обновления.
- * @param {object} importedData - Полный объект данных из JSON-файла.
- * @returns {Promise<{success: boolean, count: number, error: any}>}
- */
 export async function importData(importedData) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -79,7 +80,6 @@ export async function importData(importedData) {
     const matchesToImport = importedData.matches || [];
     let matchesResult = { count: 0, error: null };
 
-    // Импортируем матчи, если они есть
     if (matchesToImport.length > 0) {
         const preparedMatches = matchesToImport.map(match => {
             const { id, date, bans, picks, ...mainData } = match;
@@ -95,7 +95,6 @@ export async function importData(importedData) {
         return { success: false, count: 0, error: matchesResult.error };
     }
 
-    // Импортируем настройки, если они есть
     const settingsToUpdate = {};
     if (importedData.team_info) {
         settingsToUpdate.team_info = importedData.team_info;
@@ -112,7 +111,6 @@ export async function importData(importedData) {
         
         if(settingsError) {
             console.error('Ошибка при импорте настроек:', settingsError);
-            // Даже если настройки не сохранились, сообщаем об успехе импорта матчей
             ui.showToast('Матчи импортированы, но произошла ошибка при сохранении настроек.', 'error');
         }
     }
@@ -120,12 +118,17 @@ export async function importData(importedData) {
     return { success: true, count: matchesResult.count, error: null };
 }
 
-
 // --- ФУНКЦИИ ДЛЯ РАБОТЫ С НАСТРОЙКАМИ ПОЛЬЗОВАТЕЛЯ ---
 
-export async function getUserSettings() {
+let userSettingsCache = null;
+
+export async function getUserSettings(forceRefresh = false) {
+    if (userSettingsCache && !forceRefresh) {
+        return userSettingsCache;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { team_info: {}, patches: [] };
+    if (!user) return { team_info: { name: 'Моя Команда', roster: [] }, patches: [] };
 
     let { data: settings } = await supabase
         .from('user_settings')
@@ -151,11 +154,12 @@ export async function getUserSettings() {
         }
         settings = newSettings;
     }
-
-    return {
+    
+    userSettingsCache = {
         team_info: settings.team_info || { name: 'Моя Команда', roster: [] },
-        patches: settings.patches || ['1.8.86']
+        patches: settings.patches || []
     };
+    return userSettingsCache;
 }
 
 export async function updateUserSettings(updates) {
@@ -171,5 +175,7 @@ export async function updateUserSettings(updates) {
         console.error("Ошибка обновления настроек:", error);
         return false;
     }
+    
+    await getUserSettings(true); 
     return true;
 }
