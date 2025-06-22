@@ -115,6 +115,48 @@ export async function importData(importedData) {
     return { success: true, count: matchesResult.count, error: null };
 }
 
+// --- ФУНКЦИИ ДЛЯ РАБОТЫ С ЗАМЕТКАМИ ПЛАНЕРА ---
+
+export async function getPlannerNote(opponentName) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return "";
+
+    const { data, error } = await supabase
+        .from('planner_notes')
+        .select('notes')
+        .eq('user_id', user.id)
+        .eq('opponent_name', opponentName)
+        .single();
+
+    if (error && error.code !== 'PGRST116') {
+        console.error("Ошибка получения заметки:", error);
+    }
+    
+    return data ? data.notes : "";
+}
+
+export async function savePlannerNote(opponentName, notes) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { error } = await supabase
+        .from('planner_notes')
+        .upsert({
+            user_id: user.id,
+            opponent_name: opponentName,
+            notes: notes
+        }, {
+            onConflict: 'user_id, opponent_name'
+        });
+
+    if (error) {
+        console.error("Ошибка сохранения заметки:", error);
+        return false;
+    }
+    return true;
+}
+
+
 // --- ФУНКЦИИ ДЛЯ РАБОТЫ С НАСТРОЙКАМИ ПОЛЬЗОВАТЕЛЯ ---
 
 let userSettingsCache = null;

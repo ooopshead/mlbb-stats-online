@@ -53,7 +53,7 @@ export async function initPlannerPage() {
         historyContainer.innerHTML = historyHtml;
     };
 
-    const renderPlannerData = () => {
+    const renderPlannerData = async () => {
         const opponent = opponentSelect.value;
         if (!opponent) {
             plannerContent.style.display = 'none';
@@ -63,11 +63,14 @@ export async function initPlannerPage() {
         plannerContent.style.display = 'block';
         placeholder.style.display = 'none';
         document.querySelectorAll('.planner-opponent-name').forEach(el => el.textContent = opponent);
-        notesArea.value = localStorage.getItem(`planner_notes_${opponent}`) || '';
+        
+        notesArea.disabled = true;
+        notesArea.value = "Загрузка заметок...";
+        notesArea.value = await dataService.getPlannerNote(opponent);
+        notesArea.disabled = false;
 
         const matchesVsOpponent = allMatches.filter(m => m.opponent_team === opponent);
         
-        // Очистка всех полей перед рендерингом
         const clearFields = () => {
             document.getElementById('planner-h2h-stats').innerHTML = '';
             document.getElementById('planner-side-stats').innerHTML = '';
@@ -125,8 +128,6 @@ export async function initPlannerPage() {
             }
         });
         
-        // --- ИСПРАВЛЕНО: Добавлены проверки на пустые данные ---
-
         const signatures = Object.entries(oppPicks).map(([h, s]) => ({ h, p: s.p, wr: s.p > 0 ? (s.w / s.p * 100) : 0 })).sort((a, b) => b.p - a.p).slice(0, 10);
         const sigBody = document.getElementById('planner-opponent-signatures');
         if (signatures.length > 0) {
@@ -208,9 +209,15 @@ export async function initPlannerPage() {
         });
     };
     
+    let saveTimeout;
     notesArea.addEventListener('input', () => {
+        clearTimeout(saveTimeout);
         const opponent = opponentSelect.value;
-        if (opponent) localStorage.setItem(`planner_notes_${opponent}`, notesArea.value);
+        if (!opponent) return;
+
+        saveTimeout = setTimeout(async () => {
+            await dataService.savePlannerNote(opponent, notesArea.value);
+        }, 500);
     });
 
     placeholder.innerHTML = '<div class="loading-spinner"></div>';
