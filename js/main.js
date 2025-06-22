@@ -19,7 +19,7 @@ async function checkAuth() {
     
     if (!session) {
         // Если сессии нет, перенаправляем на страницу входа
-        window.location.href = '/login.html';
+        window.location.href = 'index.html';
     }
 }
 
@@ -36,7 +36,7 @@ function initLogoutButton() {
         logoutButton.addEventListener('click', async (e) => {
             e.preventDefault();
             await supabase.auth.signOut();
-            window.location.href = '/login.html';
+            window.location.href = 'index.html';
         });
         nav.appendChild(logoutButton);
     }

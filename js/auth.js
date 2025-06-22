@@ -12,7 +12,7 @@ let isRegisterMode = false;
 // Проверяем, если пользователь уже залогинен, перекидываем его на дашборд
 supabase.auth.getSession().then(({ data: { session } }) => {
     if (session) {
-        window.location.href = '/dashboard.html';
+        window.location.href = 'dashboard.html';
     }
 });
 
