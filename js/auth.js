@@ -38,37 +38,18 @@ form.addEventListener('submit', async (e) => {
     submitButton.textContent = 'Загрузка...';
 
     if (isRegisterMode) {
-        // --- РЕГИСТРАЦИЯ ---
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+        // --- РЕГИСТРАЦИЯ (УПРОЩЕННАЯ ЛОГИКА) ---
+        const { error: signUpError } = await supabase.auth.signUp({ email, password });
 
         if (signUpError) {
             errorMessage.textContent = 'Ошибка: ' + signUpError.message;
-            submitButton.disabled = false;
-            submitButton.textContent = 'Зарегистрироваться';
-            return;
-        }
-
-        // Если регистрация в auth прошла успешно, создаем профиль
-        if (signUpData.user) {
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({ 
-                    id: signUpData.user.id, 
-                    email: signUpData.user.email,
-                    is_approved: false
-                });
-            
-            if (profileError) {
-                // Если профиль не создался, это проблема, но сообщаем об успехе регистрации
-                errorMessage.textContent = 'Ошибка создания профиля: ' + profileError.message;
-            } else {
-                alert('Регистрация успешна! На вашу почту отправлено письмо для подтверждения. Администратор скоро рассмотрит вашу заявку.');
-                toggleLink.click();
-            }
+        } else {
+            alert('Регистрация успешна! На вашу почту отправлено письмо для подтверждения (если включено). Администратор скоро рассмотрит вашу заявку.');
+            toggleLink.click(); // Переключаем на форму входа
         }
         
     } else {
-        // --- ВХОД ---
+        // --- ВХОД (БЕЗ ИЗМЕНЕНИЙ) ---
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
         if (signInError) {
