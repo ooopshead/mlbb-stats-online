@@ -11,7 +11,6 @@ let isRegisterMode = false;
 
 supabase.auth.getSession().then(({ data: { session } }) => {
     if (session) {
-        // ИСПРАВЛЕННЫЙ ПУТЬ
         window.location.href = 'dashboard.html';
     }
 });
@@ -38,27 +37,47 @@ form.addEventListener('submit', async (e) => {
     submitButton.disabled = true;
     submitButton.textContent = 'Загрузка...';
 
-    let error = null;
-
     if (isRegisterMode) {
-        const { error: signUpError } = await supabase.auth.signUp({ email, password });
-        error = signUpError;
-        if (!error) {
-            alert('Регистрация успешна! На вашу почту отправлено письмо для подтверждения. После подтверждения вы сможете войти.');
-            toggleLink.click();
-        }
-    } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        error = signInError;
-    }
+        // --- РЕГИСТРАЦИЯ ---
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
 
-    if (error) {
-        errorMessage.textContent = 'Ошибка: ' + (error.message || 'Неверный email или пароль.');
-        submitButton.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
-    } else if (!isRegisterMode) {
-        // ИСПРАВЛЕННЫЙ ПУТЬ
-        window.location.href = 'dashboard.html';
+        if (signUpError) {
+            errorMessage.textContent = 'Ошибка: ' + signUpError.message;
+            submitButton.disabled = false;
+            submitButton.textContent = 'Зарегистрироваться';
+            return;
+        }
+
+        // Если регистрация в auth прошла успешно, создаем профиль
+        if (signUpData.user) {
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({ 
+                    id: signUpData.user.id, 
+                    email: signUpData.user.email,
+                    is_approved: false
+                });
+            
+            if (profileError) {
+                // Если профиль не создался, это проблема, но сообщаем об успехе регистрации
+                errorMessage.textContent = 'Ошибка создания профиля: ' + profileError.message;
+            } else {
+                alert('Регистрация успешна! На вашу почту отправлено письмо для подтверждения. Администратор скоро рассмотрит вашу заявку.');
+                toggleLink.click();
+            }
+        }
+        
+    } else {
+        // --- ВХОД ---
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (signInError) {
+            errorMessage.textContent = 'Ошибка: ' + (signInError.message || 'Неверный email или пароль.');
+        } else {
+            window.location.href = 'dashboard.html';
+        }
     }
     
     submitButton.disabled = false;
+    submitButton.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
 });
