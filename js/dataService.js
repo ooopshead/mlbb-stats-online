@@ -77,6 +77,9 @@ export async function importData(importedData) {
         return { success: false, count: 0, error: { message: 'Пользователь не авторизован' } };
     }
 
+    // Сначала убедимся, что для пользователя существуют настройки
+    await getUserSettings(true); 
+
     const matchesToImport = importedData.matches || [];
     let matchesResult = { count: 0, error: null };
 
@@ -104,13 +107,8 @@ export async function importData(importedData) {
     }
 
     if (Object.keys(settingsToUpdate).length > 0) {
-        const { error: settingsError } = await supabase
-            .from('user_settings')
-            .update(settingsToUpdate)
-            .eq('id', user.id);
-        
-        if(settingsError) {
-            console.error('Ошибка при импорте настроек:', settingsError);
+        const success = await updateUserSettings(settingsToUpdate);
+        if (!success) {
             ui.showToast('Матчи импортированы, но произошла ошибка при сохранении настроек.', 'error');
         }
     }

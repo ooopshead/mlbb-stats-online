@@ -113,7 +113,7 @@ export async function initStatsPage() {
         
         modal.style.display = 'flex';
     };
-
+    
     const calculateAndRenderStats = () => {
         ui.displayLoading(statsTbody);
 
@@ -286,7 +286,7 @@ export async function initStatsPage() {
     
     const [matches, settings] = await Promise.all([
         dataService.getMatches(),
-        dataService.getUserSettings()
+        dataService.getUserSettings(true) // Принудительно обновляем кэш
     ]);
 
     allMatches = matches;

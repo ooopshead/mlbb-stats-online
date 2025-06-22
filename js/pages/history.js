@@ -204,13 +204,15 @@ export function initHistoryPage() {
                 }
                 const matchesCount = importedData.matches?.length || 0;
                 ui.showConfirm(`Вы уверены, что хотите импортировать ${matchesCount} матчей и перезаписать настройки?`, async () => {
-                    ui.showToast('Начинаем импорт...', 'info');
+                    ui.showToast('Начинаем импорт. Это может занять некоторое время...', 'info');
                     const result = await dataService.importData(importedData);
                     if (result.success) {
-                        ui.showToast(`Импорт завершен!`, 'success');
-                        await loadPageData();
+                        ui.showToast(`Импорт завершен! Страница будет перезагружена.`, 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
                     } else {
-                        ui.showToast(`Ошибка импорта: ${result.error.message}`, 'error');
+                        ui.showToast(`Ошибка импорта: ${result.error?.message}`, 'error');
                     }
                 });
             } catch (error) {
