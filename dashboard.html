@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд - MLBB Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">MLBB Stats</div>
+        <nav>
+            <a href="dashboard.html" class="active">Дашборд</a>
+            <a href="index.html">Добавить матч</a>
+            <a href="stats.html">Статистика</a>
+            <a href="planner.html">Планер</a>
+            <a href="matchup.html">Противостояние</a>
+            <a href="history.html">История</a>
+        </nav>
+        <button id="theme-toggle" title="Сменить тему">🎨</button>
+    </header>
+
+    <main class="container" id="dashboard-container">
+        <div class="dashboard-grid">
+            <!-- Блок информации о команде -->
+            <div class="card team-info-card">
+                <div class="card-header-flex">
+                    <h2 id="team-name-display">Название команды</h2>
+                    <button id="edit-team-name-btn" class="btn-icon" title="Редактировать название">✏️</button>
+                </div>
+                <hr>
+                <h3>Состав команды</h3>
+                <ul id="roster-list" class="roster-list">
+                    <!-- Состав будет загружен из JS -->
+                </ul>
+                <form id="add-player-form" class="add-player-form">
+                    <input type="text" id="new-player-nickname" placeholder="Ник игрока" required>
+                    <select id="new-player-role" required>
+                        <option value="" disabled selected>Роль</option>
+                        <option value="EXP">EXP</option>
+                        <option value="JUNGLE">JUNGLE</option>
+                        <option value="MID">MID</option>
+                        <option value="ROAM">ROAM</option>
+                        <option value="GOLD">GOLD</option>
+                         <option value="FLEX">FLEX</option>
+                    </select>
+                    <button type="submit" class="btn add-btn">+</button>
+                </form>
+            </div>
+            
+            <!-- Блок общей статистики -->
+            <div class="card overall-stats-card">
+                 <h2>Общая статистика</h2>
+                 <div id="overall-stats-content" class="stats-summary-grid">
+                     <!-- Статистика будет загружена из JS -->
+                 </div>
+            </div>
+
+            <!-- Блок патч-трекера -->
+            <div class="card patch-tracker-card">
+                <h2>Патч-трекер</h2>
+                <ul id="patch-list" class="patch-list">
+                    <!-- Список патчей -->
+                </ul>
+                 <form id="add-patch-form" class="add-player-form">
+                    <input type="text" id="new-patch-name" placeholder="Напр: 1.8.78" required>
+                    <button type="submit" class="btn add-btn">+</button>
+                </form>
+            </div>
+
+            <!-- Блок статистики по ролям (НОВАЯ СТРУКТУРА) -->
+            <div class="card role-stats-card-full">
+                 <h2>Статистика по ролям</h2>
+                 <div id="dashboard-role-stats-container" class="dashboard-role-stats-container">
+                     <!-- Блоки для каждой роли будут вставлены сюда через JS -->
+                 </div>
+            </div>
+
+             <!-- Блок статистики против соперников -->
+            <div class="card opponent-stats-card">
+                 <h2>Статистика против соперников</h2>
+                 <div class="table-container-simple">
+                     <table class="modal-table">
+                        <thead><tr><th>Соперник</th><th>Игр</th><th>В-П</th><th>WR%</th></tr></thead>
+                        <tbody id="dashboard-opponent-stats-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+<div id="toast-container"></div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Противостояние - MLBB Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">MLBB Stats</div>
+        <nav>
+            <a href="dashboard.html">Дашборд</a>
+            <a href="index.html">Добавить матч</a>
+            <a href="stats.html">Статистика</a>
+            <a href="planner.html">Планер</a>
+            <a href="matchup.html" class="active">Противостояние</a>
+            <a href="history.html">История</a>
+        </nav>
+        <button id="theme-toggle" title="Сменить тему">🎨</button>
+    </header>
+
+    <main class="container">
+        <h1>Анализ взаимодействия героев</h1>
+        
+        <div id="matchup-container" class="card">
+            <div class="matchup-controls">
+                <div class="form-group">
+                    <label for="hero1-select">Герой 1</label>
+                    <select id="hero1-select"></select>
+                </div>
+                <div class="versus-icon">vs</div>
+                <div class="form-group">
+                    <label for="hero2-select">Герой 2</label>
+                    <select id="hero2-select"></select>
+                </div>
+            </div>
+
+            <div id="matchup-results-container" class="matchup-results" style="display: none;">
+                <hr>
+                <div class="result-section">
+                    <h2>Синергия (в одной команде)</h2>
+                    <div id="synergy-result-card" class="matchup-stat-card"></div>
+                </div>
+                <div class="result-section">
+                    <h2>Противостояние (в разных командах)</h2>
+                    <div id="matchup-result-card" class="matchup-stat-card"></div>
+                </div>
+            </div>
+            
+            <div id="no-data-placeholder" class="empty-state">
+                <p>Выберите двух героев, чтобы увидеть статистику их взаимодействия.</p>
+            </div>
+        </div>
+    </main>
+    
+<div id="toast-container"></div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

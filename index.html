@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить матч - MLBB Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">MLBB Stats</div>
+        <nav>
+            <a href="dashboard.html">Дашборд</a>
+            <a href="index.html" class="active">Добавить матч</a>
+            <a href="stats.html">Статистика</a>
+            <a href="planner.html">Планер</a>
+            <a href="matchup.html">Противостояние</a>
+            <a href="history.html">История</a>
+        </nav>
+        <button id="theme-toggle" title="Сменить тему">🎨</button>
+    </header>
+
+    <main class="container">
+        <h1>Добавить новый матч</h1>
+
+        <form id="match-form" class="card">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="opponent-team-select">Команда соперника:</label>
+                    <div class="select-with-add">
+                        <select id="opponent-team-select" name="opponent_team" required>
+                            <!-- Опции будут добавлены через JS -->
+                        </select>
+                        <button type="button" id="add-new-opponent-btn" class="add-btn" title="Добавить новую команду">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="match_type">Тип матча:</label>
+                    <select id="match_type" name="match_type">
+                        <option value="scrim">Скрим</option>
+                        <option value="tournament">Турнир</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="match_patch">Патч:</label>
+                    <select id="match_patch" name="match_patch" required>
+                        <!-- Патчи будут добавлены через JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <!-- Блок Синей Стороны -->
+                <div class="team-block team-block-blue">
+                    <div class="team-header">
+                        <h2>Синяя сторона</h2>
+                        <div class="side-selector">
+                            <input type="radio" id="our_side_is_blue" name="our_team_side" value="blue" required>
+                            <label for="our_side_is_blue">Это мы</label>
+                        </div>
+                    </div>
+                    <div class="draft-inputs">
+                        <h3>Баны</h3>
+                        <div class="draft-input-item"><span class="draft-phase">B1</span><input type="text" class="hero-input blue-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B2</span><input type="text" class="hero-input blue-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B3</span><input type="text" class="hero-input blue-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B4</span><input type="text" class="hero-input blue-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B5</span><input type="text" class="hero-input blue-ban" autocomplete="off"></div>
+                        <hr>
+                        <h3>Пики</h3>
+                        <div class="draft-input-item"><span class="draft-phase">P1</span><input type="text" class="hero-input blue-pick" autocomplete="off"><select class="hero-role-select blue-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P2</span><input type="text" class="hero-input blue-pick" autocomplete="off"><select class="hero-role-select blue-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P3</span><input type="text" class="hero-input blue-pick" autocomplete="off"><select class="hero-role-select blue-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P4</span><input type="text" class="hero-input blue-pick" autocomplete="off"><select class="hero-role-select blue-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P5</span><input type="text" class="hero-input blue-pick" autocomplete="off"><select class="hero-role-select blue-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                    </div>
+                </div>
+                <!-- Блок Красной Стороны -->
+                <div class="team-block team-block-red">
+                    <div class="team-header">
+                        <h2>Красная сторона</h2>
+                        <div class="side-selector">
+                            <input type="radio" id="our_side_is_red" name="our_team_side" value="red">
+                            <label for="our_side_is_red">Это мы</label>
+                        </div>
+                    </div>
+                    <div class="draft-inputs">
+                        <h3>Баны</h3>
+                        <div class="draft-input-item"><span class="draft-phase">B1</span><input type="text" class="hero-input red-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B2</span><input type="text" class="hero-input red-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B3</span><input type="text" class="hero-input red-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B4</span><input type="text" class="hero-input red-ban" autocomplete="off"></div>
+                        <div class="draft-input-item"><span class="draft-phase">B5</span><input type="text" class="hero-input red-ban" autocomplete="off"></div>
+                        <hr>
+                        <h3>Пики</h3>
+                        <div class="draft-input-item"><span class="draft-phase">P1</span><input type="text" class="hero-input red-pick" autocomplete="off"><select class="hero-role-select red-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P2</span><input type="text" class="hero-input red-pick" autocomplete="off"><select class="hero-role-select red-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P3</span><input type="text" class="hero-input red-pick" autocomplete="off"><select class="hero-role-select red-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P4</span><input type="text" class="hero-input red-pick" autocomplete="off"><select class="hero-role-select red-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                        <div class="draft-input-item"><span class="draft-phase">P5</span><input type="text" class="hero-input red-pick" autocomplete="off"><select class="hero-role-select red-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 24px;">
+                <label for="match-notes">Заметки к матчу</label>
+                <textarea id="match-notes" rows="4" placeholder="Например: соперник давил с первой минуты, наш лесник хорошо ротировался, пробовали новую связку и т.д."></textarea>
+            </div>
+
+            <div class="result-block">
+                <h3>Результат матча</h3>
+                <div class="radio-group">
+                    <input type="radio" id="win" name="result" value="win" required>
+                    <label for="win" class="result-label win">Победа</label>
+                    <input type="radio" id="loss" name="result" value="loss">
+                    <label for="loss" class="result-label loss">Поражение</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Сохранить матч</button>
+        </form>
+    </main>
+
+    <div id="autocomplete-container" class="autocomplete-suggestions"></div>
+    
+<div id="toast-container"></div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
