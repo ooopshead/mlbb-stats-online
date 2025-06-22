@@ -16,8 +16,8 @@ export async function getMatches() {
     return data.map(match => ({
         id: match.id,
         date: match.created_at,
-        ...match, // остальные поля
-        ...match.draft_data // распаковываем JSON
+        ...match,
+        ...match.draft_data
     }));
 }
 
@@ -65,48 +65,77 @@ export async function deleteMatch(matchId) {
     return true;
 }
 
-export async function importMatches(matchesToImport) {
+/**
+ * ИСПРАВЛЕНО: Функция теперь не только импортирует матчи, но и возвращает настройки для обновления.
+ * @param {object} importedData - Полный объект данных из JSON-файла.
+ * @returns {Promise<{success: boolean, count: number, error: any}>}
+ */
+export async function importData(importedData) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { success: false, count: 0, error: { message: 'Пользователь не авторизован' } };
     }
 
-    const preparedMatches = matchesToImport.map(match => {
-        const { id, date, bans, picks, ...mainData } = match;
-        const draft_data = { bans, picks };
-        return { ...mainData, draft_data, user_id: user.id };
-    });
+    const matchesToImport = importedData.matches || [];
+    let matchesResult = { count: 0, error: null };
 
-    const { count, error } = await supabase.from('matches').insert(preparedMatches);
-    if (error) {
-        console.error('Ошибка при импорте матчей:', error);
-        return { success: false, count: 0, error };
+    // Импортируем матчи, если они есть
+    if (matchesToImport.length > 0) {
+        const preparedMatches = matchesToImport.map(match => {
+            const { id, date, bans, picks, ...mainData } = match;
+            const draft_data = { bans, picks };
+            return { ...mainData, draft_data, user_id: user.id };
+        });
+        const { count, error } = await supabase.from('matches').insert(preparedMatches);
+        matchesResult = { count: count || preparedMatches.length, error };
     }
-    return { success: true, count: count || preparedMatches.length, error: null };
+    
+    if (matchesResult.error) {
+        console.error('Ошибка при импорте матчей:', matchesResult.error);
+        return { success: false, count: 0, error: matchesResult.error };
+    }
+
+    // Импортируем настройки, если они есть
+    const settingsToUpdate = {};
+    if (importedData.team_info) {
+        settingsToUpdate.team_info = importedData.team_info;
+    }
+    if (importedData.patches) {
+        settingsToUpdate.patches = importedData.patches;
+    }
+
+    if (Object.keys(settingsToUpdate).length > 0) {
+        const { error: settingsError } = await supabase
+            .from('user_settings')
+            .update(settingsToUpdate)
+            .eq('id', user.id);
+        
+        if(settingsError) {
+            console.error('Ошибка при импорте настроек:', settingsError);
+            // Даже если настройки не сохранились, сообщаем об успехе импорта матчей
+            ui.showToast('Матчи импортированы, но произошла ошибка при сохранении настроек.', 'error');
+        }
+    }
+
+    return { success: true, count: matchesResult.count, error: null };
 }
 
-// --- НОВЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С НАСТРОЙКАМИ ПОЛЬЗОВАТЕЛЯ ---
 
-/**
- * Получает настройки пользователя (инфо о команде, патчи).
- * Если настроек нет, создает их с дефолтными значениями.
- * @returns {Promise<object>} Объект с настройками.
- */
+// --- ФУНКЦИИ ДЛЯ РАБОТЫ С НАСТРОЙКАМИ ПОЛЬЗОВАТЕЛЯ ---
+
 export async function getUserSettings() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { team_info: {}, patches: [] };
 
-    // 1. Пытаемся получить настройки
     let { data: settings } = await supabase
         .from('user_settings')
         .select('*')
         .eq('id', user.id)
         .single();
 
-    // 2. Если настроек нет (новый пользователь), создаем их
     if (!settings) {
         const defaultSettings = {
-            id: user.id, // Связываем с ID пользователя
+            id: user.id,
             team_info: { name: 'Моя Команда', roster: [] },
             patches: ['1.8.86']
         };
@@ -118,24 +147,17 @@ export async function getUserSettings() {
         
         if (error) {
             console.error("Ошибка создания настроек для нового пользователя:", error);
-            // Возвращаем дефолтные значения, чтобы приложение не сломалось
             return { team_info: defaultSettings.team_info, patches: defaultSettings.patches };
         }
         settings = newSettings;
     }
 
-    // 3. Возвращаем данные в нужном формате
     return {
         team_info: settings.team_info || { name: 'Моя Команда', roster: [] },
         patches: settings.patches || ['1.8.86']
     };
 }
 
-/**
- * Обновляет настройки пользователя в базе данных.
- * @param {object} updates - Объект с полями для обновления (например, { team_info: ... } или { patches: ... }).
- * @returns {Promise<boolean>} true в случае успеха.
- */
 export async function updateUserSettings(updates) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
