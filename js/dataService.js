@@ -77,7 +77,6 @@ export async function importData(importedData) {
         return { success: false, count: 0, error: { message: 'Пользователь не авторизован' } };
     }
 
-    // Сначала убедимся, что для пользователя существуют настройки
     await getUserSettings(true); 
 
     const matchesToImport = importedData.matches || [];
@@ -120,8 +119,13 @@ export async function importData(importedData) {
 
 let userSettingsCache = null;
 
-export async function getUserSettings(forceRefresh = false) {
-    if (userSettingsCache && !forceRefresh) {
+export async function forceRefreshSettings() {
+    userSettingsCache = null;
+    return await getUserSettings();
+}
+
+export async function getUserSettings() {
+    if (userSettingsCache) {
         return userSettingsCache;
     }
 
@@ -147,7 +151,7 @@ export async function getUserSettings(forceRefresh = false) {
             .single();
         
         if (error) {
-            console.error("Ошибка создания настроек для нового пользователя:", error);
+            console.error("Ошибка создания настроек:", error);
             return { team_info: defaultSettings.team_info, patches: defaultSettings.patches };
         }
         settings = newSettings;
@@ -174,6 +178,6 @@ export async function updateUserSettings(updates) {
         return false;
     }
     
-    await getUserSettings(true); 
+    await forceRefreshSettings();
     return true;
 }

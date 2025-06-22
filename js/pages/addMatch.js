@@ -1,9 +1,9 @@
-import * as store from '../store.js'; // Оставляем для списка героев
+import * as store from '../store.js';
 import * as ui from '../ui.js';
-import * as dataService from '../dataService.js'; // <-- ИМПОРТИРУЕМ НАШ СЕРВИС
-import { supabase } from '../supabaseClient.js'; // <-- ИМПОРТИРУЕМ КЛИЕНТ SUPABASE
+import * as dataService from '../dataService.js';
+import { supabase } from '../supabaseClient.js';
 
-export function initAddMatchPage() {
+export async function initAddMatchPage() {
     const matchForm = document.getElementById('match-form');
     if (!matchForm) return;
 
@@ -14,7 +14,7 @@ export function initAddMatchPage() {
     const patchSelect = document.getElementById('match_patch');
     
     const populateOpponentSelect = async () => {
-        const matches = await dataService.getMatches(); 
+        const matches = await dataService.getMatches();
         const opponentNames = [...new Set(matches.map(match => match.opponent_team).filter(Boolean))].sort();
         const lastOpponent = localStorage.getItem('last_opponent');
         opponentSelect.innerHTML = '<option value="" disabled selected>-- Выберите команду --</option>';
@@ -26,20 +26,20 @@ export function initAddMatchPage() {
         }
     };
 
-    const populatePatchSelect = () => {
-        const patches = dataService.getPatches();
+    const populatePatchSelect = async () => {
+        const { patches } = await dataService.getUserSettings();
         const lastPatch = localStorage.getItem('last_patch');
         patchSelect.innerHTML = '';
-        if (patches.length === 0) {
-            patchSelect.innerHTML = '<option value="" disabled selected>Добавьте патч</option>';
+        if (!patches || patches.length === 0) {
+            patchSelect.innerHTML = '<option value="" disabled selected>Добавьте патч на Дашборде</option>';
         } else {
-            patches.forEach(p => patchSelect.add(new Option(p, p)));
+            patches.sort().reverse().forEach(p => patchSelect.add(new Option(p, p)));
             if (lastPatch && patchSelect.querySelector(`option[value="${lastPatch}"]`)) {
                 patchSelect.value = lastPatch;
             }
         }
     };
-
+    
     populateOpponentSelect();
     populatePatchSelect();
 
@@ -61,7 +61,6 @@ export function initAddMatchPage() {
         submitButton.disabled = true;
         submitButton.textContent = 'Сохранение...';
 
-        // ИСПРАВЛЕНО: Получаем текущего пользователя
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             ui.showToast('Ошибка: Пользователь не авторизован.', 'error');
@@ -106,7 +105,7 @@ export function initAddMatchPage() {
         })).filter(item => item.hero);
 
         const newMatchData = {
-            user_id: user.id, // <-- ЯВНО ДОБАВЛЯЕМ ID ПОЛЬЗОВАТЕЛЯ
+            user_id: user.id,
             opponent_team: opponentSelect.value,
             match_type: document.getElementById('match_type').value,
             patch: patchSelect.value,

@@ -1,6 +1,6 @@
 import * as ui from '../ui.js';
 import * as dataService from '../dataService.js';
-import * as store from '../store.js'; // для getH
+import * as store from '../store.js';
 
 export async function initDashboardPage() {
     const dashboardContainer = document.getElementById('dashboard-container');

@@ -71,7 +71,7 @@ export function initHistoryPage() {
         const { patches } = await dataService.getUserSettings();
         const patchSelect = document.getElementById('edit-match_patch');
         patchSelect.innerHTML = '';
-        patches.forEach(p => patchSelect.add(new Option(p, p)));
+        patches.sort().reverse().forEach(p => patchSelect.add(new Option(p, p)));
         patchSelect.value = match.patch || "";
 
         document.getElementById('edit-match_type').value = match.match_type;
