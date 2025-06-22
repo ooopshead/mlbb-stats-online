@@ -1059,3 +1059,39 @@ body.dark-mode .suggestion-item:hover { color: #1c2128; }
     border-bottom: 1px dashed var(--border-light);
     padding-bottom: 8px;
 }
+/* --- Новые стили для банов в истории игр планера --- */
+
+.compact-draft-list.bans .hero-icon {
+    opacity: 0.6;
+    border-color: var(--loss-light);
+    transition: all 0.2s ease;
+}
+
+.compact-draft-list.bans .hero-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    border-color: #ff0000; /* Ярко-красный для акцента при наведении */
+}
+
+/* Изменяем порядок отображения для мобильных устройств, чтобы было логичнее */
+.compact-team-draft .draft-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Выравниваем по левому краю */
+    gap: 4px;
+}
+
+.compact-team-draft .draft-row strong {
+    margin-bottom: 4px; /* Небольшой отступ от иконок */
+}
+
+@media (min-width: 768px) {
+    .compact-team-draft .draft-row {
+        flex-direction: row; /* Возвращаем в строку на больших экранах */
+        align-items: center;
+        gap: 8px;
+    }
+    .compact-team-draft .draft-row strong {
+        margin-bottom: 0;
+    }
+}

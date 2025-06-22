@@ -38,6 +38,12 @@ export async function initPlannerPage() {
         const historyHtml = recentMatches.map(match => {
             const ourSide = match.our_team_side;
             const date = new Date(match.date).toLocaleDateString('ru-RU');
+            
+            const ourBansHtml = `<ul class="compact-draft-list bans">${draftToHtml(match.bans?.our_team)}</ul>`;
+            const ourPicksHtml = `<ul class="compact-draft-list picks">${draftToHtml(match.picks?.our_team)}</ul>`;
+            const oppBansHtml = `<ul class="compact-draft-list bans">${draftToHtml(match.bans?.opponent_team)}</ul>`;
+            const oppPicksHtml = `<ul class="compact-draft-list picks">${draftToHtml(match.picks?.opponent_team)}</ul>`;
+
             return `
                 <div class="compact-match-card ${match.result}">
                     <div class="compact-match-header">
@@ -45,10 +51,19 @@ export async function initPlannerPage() {
                         <span class="text-muted">${date}</span>
                     </div>
                     <div class="compact-match-body">
-                        <div class="compact-team-draft"><span class="team-side-badge team-side-${ourSide}">Мы</span><div class="draft-row"><strong>Пики:</strong> <ul class="compact-draft-list">${draftToHtml(match.picks?.our_team)}</ul></div><div class="draft-row"><strong>Баны:</strong> <ul class="compact-draft-list">${draftToHtml(match.bans?.our_team)}</ul></div></div>
-                        <div class="compact-team-draft"><span class="team-side-badge team-side-${ourSide === 'blue' ? 'red' : 'blue'}">Они</span><div class="draft-row"><strong>Пики:</strong> <ul class="compact-draft-list">${draftToHtml(match.picks?.opponent_team)}</ul></div><div class="draft-row"><strong>Баны:</strong> <ul class="compact-draft-list">${draftToHtml(match.bans?.opponent_team)}</ul></div></div>
+                        <div class="compact-team-draft">
+                            <span class="team-side-badge team-side-${ourSide}">Мы</span>
+                            <div class="draft-row"><strong>Баны:</strong> ${ourBansHtml}</div>
+                            <div class="draft-row"><strong>Пики:</strong> ${ourPicksHtml}</div>
+                        </div>
+                        <div class="compact-team-draft">
+                            <span class="team-side-badge team-side-${ourSide === 'blue' ? 'red' : 'blue'}">Они</span>
+                            <div class="draft-row"><strong>Баны:</strong> ${oppBansHtml}</div>
+                            <div class="draft-row"><strong>Пики:</strong> ${oppPicksHtml}</div>
+                        </div>
                     </div>
-                </div>`;
+                </div>
+            `;
         }).join('');
         historyContainer.innerHTML = historyHtml;
     };
