@@ -9,21 +9,18 @@ const errorMessage = document.getElementById('error-message');
 
 let isRegisterMode = false;
 
-// Проверяем, если пользователь уже залогинен, перекидываем его на дашборд
 supabase.auth.getSession().then(({ data: { session } }) => {
     if (session) {
+        // ИСПРАВЛЕННЫЙ ПУТЬ
         window.location.href = 'dashboard.html';
     }
 });
 
-
-// Переключение между входом и регистрацией
 toggleLink.addEventListener('click', (e) => {
     e.preventDefault();
     isRegisterMode = !isRegisterMode;
     errorMessage.textContent = '';
-    form.reset(); // Очищаем поля при переключении
-
+    form.reset();
     if (isRegisterMode) {
         submitButton.textContent = 'Зарегистрироваться';
         toggleLink.innerHTML = 'Уже есть аккаунт? <strong>Войти</strong>';
@@ -33,7 +30,6 @@ toggleLink.addEventListener('click', (e) => {
     }
 });
 
-// Обработка отправки формы
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = emailInput.value;
@@ -45,16 +41,13 @@ form.addEventListener('submit', async (e) => {
     let error = null;
 
     if (isRegisterMode) {
-        // Регистрация
         const { error: signUpError } = await supabase.auth.signUp({ email, password });
         error = signUpError;
         if (!error) {
             alert('Регистрация успешна! На вашу почту отправлено письмо для подтверждения. После подтверждения вы сможете войти.');
-            // Можно переключить обратно в режим входа
             toggleLink.click();
         }
     } else {
-        // Вход
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         error = signInError;
     }
@@ -63,8 +56,8 @@ form.addEventListener('submit', async (e) => {
         errorMessage.textContent = 'Ошибка: ' + (error.message || 'Неверный email или пароль.');
         submitButton.textContent = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
     } else if (!isRegisterMode) {
-        // Если ошибок нет и это был вход, перенаправляем на дашборд
-        window.location.href = '/dashboard.html';
+        // ИСПРАВЛЕННЫЙ ПУТЬ
+        window.location.href = 'dashboard.html';
     }
     
     submitButton.disabled = false;

@@ -15,23 +15,26 @@ export async function initDashboardPage() {
     const opponentStatsBody = document.getElementById('dashboard-opponent-stats-body');
     const patchList = document.getElementById('patch-list');
     const addPatchForm = document.getElementById('add-patch-form');
+    
+    let userSettings = {}; // Кэшируем настройки пользователя
 
     const renderTeamInfo = () => {
-        const teamInfo = dataService.getTeamInfo();
+        const teamInfo = userSettings.team_info || { name: 'Моя Команда', roster: [] };
         teamNameDisplay.textContent = teamInfo.name;
         rosterList.innerHTML = '';
-        if (teamInfo.roster.length === 0) {
+        if (!teamInfo.roster || teamInfo.roster.length === 0) {
             rosterList.innerHTML = '<li class="text-muted">Добавьте игроков в состав</li>';
+        } else {
+            teamInfo.roster.forEach((player, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<div class="player-info"><span class="player-nickname">${player.nickname}</span><span class="hero-role-tag role-${player.role.toLowerCase()}">${player.role}</span></div><button class="remove-btn" data-index="${index}" title="Удалить игрока">&times;</button>`;
+                rosterList.appendChild(li);
+            });
         }
-        teamInfo.roster.forEach((player, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `<div class="player-info"><span class="player-nickname">${player.nickname}</span><span class="hero-role-tag role-${player.role.toLowerCase()}">${player.role}</span></div><button class="remove-btn" data-index="${index}" title="Удалить игрока">&times;</button>`;
-            rosterList.appendChild(li);
-        });
     };
 
     const renderPatches = () => {
-        const patches = dataService.getPatches();
+        const patches = userSettings.patches || [];
         patches.sort().reverse();
         patchList.innerHTML = '';
         if (patches.length === 0) {
@@ -115,65 +118,70 @@ export async function initDashboardPage() {
         }
     };
     
-    editTeamNameBtn.addEventListener('click', () => {
-        const teamInfo = dataService.getTeamInfo();
+    editTeamNameBtn.addEventListener('click', async () => {
+        const teamInfo = userSettings.team_info;
         const newName = prompt('Введите новое название команды:', teamInfo.name);
         if (newName && newName.trim() !== '') {
             teamInfo.name = newName.trim();
-            dataService.setTeamInfo(teamInfo);
-            renderTeamInfo();
+            const success = await dataService.updateUserSettings({ team_info: teamInfo });
+            if (success) renderTeamInfo();
         }
     });
 
-    addPlayerForm.addEventListener('submit', (e) => {
+    addPlayerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nickname = document.getElementById('new-player-nickname').value.trim();
         const role = document.getElementById('new-player-role').value;
         if (nickname && role) {
-            const teamInfo = dataService.getTeamInfo();
+            const teamInfo = userSettings.team_info;
+            if (!teamInfo.roster) teamInfo.roster = [];
             teamInfo.roster.push({ nickname, role });
-            dataService.setTeamInfo(teamInfo);
-            renderTeamInfo();
-            e.target.reset();
+            const success = await dataService.updateUserSettings({ team_info: teamInfo });
+            if (success) {
+                renderTeamInfo();
+                e.target.reset();
+            }
         }
     });
 
     rosterList.addEventListener('click', (e) => {
         if (e.target.classList.contains('remove-btn')) {
             const index = parseInt(e.target.dataset.index);
-            ui.showConfirm('Удалить игрока из состава?', () => {
-                const teamInfo = dataService.getTeamInfo();
+            ui.showConfirm('Удалить игрока из состава?', async () => {
+                const teamInfo = userSettings.team_info;
                 teamInfo.roster.splice(index, 1);
-                dataService.setTeamInfo(teamInfo);
-                renderTeamInfo();
+                const success = await dataService.updateUserSettings({ team_info: teamInfo });
+                if (success) renderTeamInfo();
             });
         }
     });
 
-    addPatchForm.addEventListener('submit', (e) => {
+    addPatchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newPatch = document.getElementById('new-patch-name').value.trim();
         if (newPatch) {
-            const patches = dataService.getPatches();
+            const patches = userSettings.patches || [];
             if (!patches.includes(newPatch)) {
                 patches.push(newPatch);
-                dataService.setPatches(patches);
-                renderPatches();
+                const success = await dataService.updateUserSettings({ patches: patches });
+                if(success) {
+                    renderPatches();
+                    e.target.reset();
+                }
             } else {
                 ui.showToast('Этот патч уже существует.', 'error');
             }
-            e.target.reset();
         }
     });
 
     patchList.addEventListener('click', (e) => {
         if (e.target.classList.contains('remove-btn')) {
             const patchToRemove = e.target.dataset.patch;
-            ui.showConfirm(`Удалить патч "${patchToRemove}"?`, () => {
-                let patches = dataService.getPatches();
+            ui.showConfirm(`Удалить патч "${patchToRemove}"?`, async () => {
+                let patches = userSettings.patches || [];
                 patches = patches.filter(p => p !== patchToRemove);
-                dataService.setPatches(patches);
-                renderPatches();
+                const success = await dataService.updateUserSettings({ patches: patches });
+                if (success) renderPatches();
             });
         }
     });
@@ -181,7 +189,15 @@ export async function initDashboardPage() {
     // Загрузка всех данных и рендеринг
     overallStatsContent.innerHTML = '<div class="loading-spinner"></div>';
     roleStatsContainer.innerHTML = '';
-    const matches = await dataService.getMatches();
+    
+    // Запускаем оба запроса параллельно для скорости
+    const [matches, settings] = await Promise.all([
+        dataService.getMatches(),
+        dataService.getUserSettings()
+    ]);
+    
+    userSettings = settings; // Сохраняем настройки в кэш
+
     renderTeamInfo();
     renderPatches();
     renderDashboardStats(matches);
