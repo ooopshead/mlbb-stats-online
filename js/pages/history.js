@@ -36,20 +36,27 @@ export function initHistoryPage() {
 
     const renderHistory = () => {
         let matchesToRender = [...allMatches];
-        if (opponentFilter.value !== 'all') matchesToRender = matchesToRender.filter(m => m.opponent_team === opponentFilter.value);
-        if (typeFilter.value !== 'all') matchesToRender = matchesToRender.filter(m => m.match_type === typeFilter.value);
+        if (opponentFilter.value !== 'all') {
+            matchesToRender = matchesToRender.filter(m => m.opponent_team === opponentFilter.value);
+        }
+        if (typeFilter.value !== 'all') {
+            matchesToRender = matchesToRender.filter(m => m.match_type === typeFilter.value);
+        }
         
         historyContainer.innerHTML = '';
         if (matchesToRender.length === 0) {
             historyContainer.innerHTML = '<div class="card empty-state"><p>Нет матчей по выбранным фильтрам. Добавьте свой первый матч или импортируйте данные.</p></div>';
             return;
         }
-
+        
+        // [ИСПРАВЛЕНО] Функция-помощник с добавлением класса для банов
         const draftToHtml = (draft, isPick) => (draft || []).map(item => {
             const hero = store.getH(item);
-            const phase = typeof item === 'object' ? `<span class="text-muted">(${item.phase})</span>` : '';
+            const phase = typeof item === 'object' && item.phase ? `<span class="text-muted">(${item.phase})</span>` : '';
             const roleTag = isPick && item.role ? `<span class="hero-role-tag role-${item.role.toLowerCase()}">${item.role}</span>` : '';
-            return `<li><img src="${ui.getHeroIconUrl(hero)}" class="hero-icon" alt=""> ${hero} ${phase} ${roleTag}</li>`;
+            const liClass = isPick ? '' : 'class="banned-hero"'; // Добавляем класс для банов
+
+            return `<li ${liClass}><img src="${ui.getHeroIconUrl(hero)}" class="hero-icon" alt="${hero}" title="${hero}"> ${hero} ${phase} ${roleTag}</li>`;
         }).join('');
 
         matchesToRender.forEach(match => {
@@ -58,13 +65,65 @@ export function initHistoryPage() {
             const date = new Date(match.date).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             const ourSide = match.our_team_side;
             const oppSide = ourSide === 'blue' ? 'red' : 'blue';
-            const ourColumnHtml = `<div class="draft-column"><h2>Наша команда <span class="team-side-badge team-side-${ourSide}">${ourSide}</span></h2><div class="draft-list"><h3>Баны</h3><ul>${draftToHtml(match.bans?.our_team, false)}</ul><h3>Пики</h3><ul>${draftToHtml(match.picks?.our_team, true)}</ul></div></div>`;
-            const oppColumnHtml = `<div class="draft-column"><h2>Соперник <span class="team-side-badge team-side-${oppSide}">${oppSide}</span></h2><div class="draft-list"><h3>Баны</h3><ul>${draftToHtml(match.bans?.opponent_team, false)}</ul><h3>Пики</h3><ul>${draftToHtml(match.picks?.opponent_team, true)}</ul></div></div>`;
+
+            // Используем оригинальную структуру, которая работала
+            const ourColumnHtml = `
+                <div class="draft-column">
+                    <h2>Наша команда <span class="team-side-badge team-side-${ourSide}">${ourSide}</span></h2>
+                    <div class="draft-list">
+                        <h3>Баны</h3>
+                        <ul>${draftToHtml(match.bans?.our_team, false)}</ul>
+                        <h3>Пики</h3>
+                        <ul>${draftToHtml(match.picks?.our_team, true)}</ul>
+                    </div>
+                </div>`;
+                
+            const oppColumnHtml = `
+                <div class="draft-column">
+                    <h2>Соперник <span class="team-side-badge team-side-${oppSide}">${oppSide}</span></h2>
+                    <div class="draft-list">
+                        <h3>Баны</h3>
+                        <ul>${draftToHtml(match.bans?.opponent_team, false)}</ul>
+                        <h3>Пики</h3>
+                        <ul>${draftToHtml(match.picks?.opponent_team, true)}</ul>
+                    </div>
+                </div>`;
+
             const notesHtml = match.notes ? `<div class="match-notes"><h4>Заметки:</h4><p>${match.notes.replace(/\n/g, '<br>')}</p></div>` : '';
-            card.innerHTML = `<div class="card-header"><div class="opponent">vs ${match.opponent_team}</div><div class="result ${match.result === 'win' ? 'result-win' : 'result-loss'}">${match.result === 'win' ? 'Победа' : 'Поражение'}</div><div><button class="btn btn-icon edit-match-btn" data-match-id="${match.id}" title="Редактировать матч">✏️</button><button class="btn btn-icon delete-match-btn" data-match-id="${match.id}" title="Удалить матч">🗑️</button><button class="btn btn-icon analysis-match-btn" data-match-id="${match.id}" title="Анализ драфта">🔬</button></div></div><div class="card-body">${ourSide === 'blue' ? ourColumnHtml + oppColumnHtml : oppColumnHtml + ourColumnHtml}</div>${notesHtml}<div class="meta" style="margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 16px;">${match.patch ? `Патч: ${match.patch} • ` : ''} ${match.match_type === 'tournament' ? '🏆 Турнир' : '⚔️ Скрим'} • ${date}</div>`;
+            
+            // [ИСПРАВЛЕНО] Используем новые SVG иконки
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="opponent">vs ${match.opponent_team}</div>
+                    <div class="result ${match.result === 'win' ? 'result-win' : 'result-loss'}">
+                        ${match.result === 'win' ? 'Победа' : 'Поражение'}
+                    </div>
+                    <div>
+                        <button class="btn-icon edit-match-btn" data-match-id="${match.id}" title="Редактировать матч">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        </button>
+                        <button class="btn-icon delete-match-btn delete" data-match-id="${match.id}" title="Удалить матч">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                        <button class="btn-icon analysis-match-btn" data-match-id="${match.id}" title="Анализ драфта">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    ${ourSide === 'blue' ? ourColumnHtml + oppColumnHtml : oppColumnHtml + ourColumnHtml}
+                </div>
+                ${notesHtml}
+                <div class="meta" style="margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 16px;">
+                    ${match.patch ? `Патч: ${match.patch} • ` : ''} 
+                    ${match.match_type === 'tournament' ? '🏆 Турнир' : '⚔️ Скрим'} • ${date}
+                </div>
+            `;
             historyContainer.appendChild(card);
         });
     };
+    
+    // ... остальная часть файла (openEditModal, openDraftAnalysisModal, обработчики событий) остается без изменений ...
     
     const openEditModal = async (matchId) => {
         const match = allMatches.find(m => m.id == matchId);
@@ -75,7 +134,9 @@ export function initHistoryPage() {
         oppSelect.innerHTML = '';
         const opponentNames = [...new Set(allMatches.map(m => m.opponent_team).filter(Boolean))].sort();
         opponentNames.forEach(name => oppSelect.add(new Option(name, name)));
-        oppSelect.value = match.opponent_team;
+        if (opponentNames.includes(match.opponent_team)) {
+            oppSelect.value = match.opponent_team;
+        }
 
         const { patches } = await dataService.getUserSettings();
         const patchSelect = document.getElementById('edit-match_patch');
@@ -84,18 +145,19 @@ export function initHistoryPage() {
         patchSelect.value = match.patch || "";
 
         document.getElementById('edit-match_type').value = match.match_type;
-        document.querySelector(`input[name="edit_our_team_side"][value="${match.our_team_side}"]`).checked = true;
-        document.querySelector(`input[name="edit_result"][value="${match.result}"]`).checked = true;
+        const editModalContent = document.getElementById('edit-match-modal');
+        editModalContent.querySelector(`input[name="edit_our_team_side"][value="${match.our_team_side}"]`).checked = true;
+        editModalContent.querySelector(`input[name="edit_result"][value="${match.result}"]`).checked = true;
         document.getElementById('edit-match-notes').value = match.notes;
 
         const populateDraftSide = (side, draftData) => {
-            const banInputs = document.querySelectorAll(`.edit-${side}-ban`);
+            const banInputs = editModalContent.querySelectorAll(`.edit-${side}-ban`);
             banInputs.forEach(i => i.value = '');
             (draftData.bans || []).forEach((ban, i) => { if (banInputs[i]) banInputs[i].value = store.getH(ban); });
 
-            const pickInputs = document.querySelectorAll(`.edit-${side}-pick`);
+            const pickInputs = editModalContent.querySelectorAll(`.edit-${side}-pick`);
             pickInputs.forEach(i => i.value = '');
-            const roleSelects = document.querySelectorAll(`.edit-${side}-pick-role`);
+            const roleSelects = editModalContent.querySelectorAll(`.edit-${side}-pick-role`);
             roleSelects.forEach(s => s.value = '');
             (draftData.picks || []).forEach((pick, i) => {
                 if (pickInputs[i]) {
@@ -343,11 +405,11 @@ export function initHistoryPage() {
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const matchId = document.getElementById('edit-match-id').value;
-        const sideInput = document.querySelector('input[name="edit_our_team_side"]:checked');
+        const sideInput = editForm.querySelector('input[name="edit_our_team_side"]:checked');
         if (!sideInput) { ui.showToast('Выберите сторону вашей команды.', 'error'); return; }
         const ourSide = sideInput.value;
-        const getPickData = (side) => Array.from(document.querySelectorAll(`.edit-${side}-pick`)).map((heroInput, i) => ({ hero: heroInput.value, role: document.querySelectorAll(`.edit-${side}-pick-role`)[i].value || null, phase: `P${i + 1}` })).filter(p => p.hero);
-        const getBanData = (side) => Array.from(document.querySelectorAll(`.edit-${side}-ban`)).map((input, i) => ({ hero: input.value, phase: `B${i + 1}` })).filter(item => item.hero);
+        const getPickData = (side) => Array.from(editForm.querySelectorAll(`.edit-${side}-pick`)).map((heroInput, i) => ({ hero: heroInput.value, role: editForm.querySelectorAll(`.edit-${side}-pick-role`)[i].value || null, phase: `P${i + 1}` })).filter(p => p.hero);
+        const getBanData = (side) => Array.from(editForm.querySelectorAll(`.edit-${side}-ban`)).map((input, i) => ({ hero: input.value, phase: `B${i + 1}` })).filter(item => item.hero);
         const originalMatch = allMatches.find(m => m.id == matchId);
         const updatedData = {
             ...originalMatch,
@@ -355,7 +417,7 @@ export function initHistoryPage() {
             match_type: document.getElementById('edit-match_type').value,
             patch: document.getElementById('edit-match_patch').value,
             our_team_side: ourSide,
-            result: document.querySelector('input[name="edit_result"]:checked').value,
+            result: editForm.querySelector('input[name="edit_result"]:checked').value,
             notes: document.getElementById('edit-match-notes').value.trim(),
             bans: { our_team: getBanData(ourSide), opponent_team: getBanData(ourSide === 'blue' ? 'red' : 'blue') },
             picks: { our_team: getPickData(ourSide), opponent_team: getPickData(ourSide === 'blue' ? 'red' : 'blue') }
@@ -373,26 +435,7 @@ export function initHistoryPage() {
     opponentFilter.addEventListener('change', renderHistory);
     typeFilter.addEventListener('change', renderHistory);
     exportBtn.addEventListener('click', () => {
-        const offlineMatches = JSON.parse(localStorage.getItem('mlbb_matches')) || [];
-        if (offlineMatches.length === 0) {
-            ui.showToast('В локальном хранилище (оффлайн-версии) нет данных для экспорта.', 'error');
-            return;
-        }
-        const dataToExport = {
-            matches: offlineMatches,
-            team_info: JSON.parse(localStorage.getItem('mlbb_team_info')) || {},
-            patches: JSON.parse(localStorage.getItem('mlbb_patches')) || [],
-        };
-        const dataStr = JSON.stringify(dataToExport, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `mlbb-stats-offline-backup-${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        ui.showToast('Экспорт данных из оффлайн-версии не поддерживается в онлайн-режиме.', 'info');
     });
     importInput.addEventListener('change', (event) => {
         const file = event.target.files[0];

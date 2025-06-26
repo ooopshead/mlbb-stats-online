@@ -24,7 +24,9 @@ export async function initDashboardPage() {
         rosterList.innerHTML = '';
         (teamInfo.roster || []).forEach((player, index) => {
             const li = document.createElement('li');
-            li.innerHTML = `<div class="player-info"><span class="player-nickname">${player.nickname}</span><span class="hero-role-tag role-${player.role.toLowerCase()}">${player.role}</span></div><button class="remove-btn" data-index="${index}" title="Удалить игрока">&times;</button>`;
+            li.innerHTML = `<div class="player-info"><span class="player-nickname">${player.nickname}</span><span class="hero-role-tag role-${player.role.toLowerCase()}">${player.role}</span></div><button class="btn-icon remove-btn delete" data-index="${index}" title="Удалить игрока">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+</button>`;
             rosterList.appendChild(li);
         });
         if (rosterList.innerHTML === '') {

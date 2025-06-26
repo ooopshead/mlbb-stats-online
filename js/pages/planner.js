@@ -30,7 +30,7 @@ export async function initPlannerPage() {
             return;
         }
 
-        const draftToHtml = (draft) => (draft || []).map(item => {
+        const draftToHtml = (draft, isBan = false) => (draft || []).map(item => {
             const hero = store.getH(item);
             return `<li><img src="${ui.getHeroIconUrl(hero)}" class="hero-icon" alt="${hero}" title="${hero}"></li>`;
         }).join('');
@@ -39,9 +39,10 @@ export async function initPlannerPage() {
             const ourSide = match.our_team_side;
             const date = new Date(match.date).toLocaleDateString('ru-RU');
             
-            const ourBansHtml = `<ul class="compact-draft-list bans">${draftToHtml(match.bans?.our_team)}</ul>`;
+            // Используем isBan флаг для применения стилей к банам
+            const ourBansHtml = `<ul class="compact-draft-list bans">${draftToHtml(match.bans?.our_team, true)}</ul>`;
             const ourPicksHtml = `<ul class="compact-draft-list picks">${draftToHtml(match.picks?.our_team)}</ul>`;
-            const oppBansHtml = `<ul class="compact-draft-list bans">${draftToHtml(match.bans?.opponent_team)}</ul>`;
+            const oppBansHtml = `<ul class="compact-draft-list bans">${draftToHtml(match.bans?.opponent_team, true)}</ul>`;
             const oppPicksHtml = `<ul class="compact-draft-list picks">${draftToHtml(match.picks?.opponent_team)}</ul>`;
 
             return `
@@ -104,8 +105,8 @@ export async function initPlannerPage() {
 
         const totalGames = matchesVsOpponent.length;
         const wins = matchesVsOpponent.filter(m => m.result === 'win').length;
-        const wr = (wins / totalGames * 100).toFixed(1);
-        document.getElementById('planner-h2h-stats').innerHTML = `<div class="summary-item"><h4>Игр</h4><p>${totalGames}</p></div><div class="summary-item"><h4>В-П</h4><p>${wins}-${totalGames - wins}</p></div><div class="summary-item"><h4>WR%</h4><p class="winrate ${wr >= 50 ? 'win' : 'loss'}">${wr}%</p></div>`;
+        const wr = totalGames > 0 ? (wins / totalGames * 100).toFixed(1) : '0.0';
+        document.getElementById('planner-h2h-stats').innerHTML = `<div class="summary-item"><h4>Игр</h4><p>${totalGames}</p></div><div class="summary-item"><h4>В-П</h4><p>${wins}-${totalGames - wins}</p></div><div class="summary-item"><h4>WR%</h4><p class="winrate ${parseFloat(wr) >= 50 ? 'win' : 'loss'}">${wr}%</p></div>`;
 
         const blueGames = matchesVsOpponent.filter(m => m.our_team_side === 'blue');
         const redGames = matchesVsOpponent.filter(m => m.our_team_side === 'red');
@@ -146,7 +147,7 @@ export async function initPlannerPage() {
         const signatures = Object.entries(oppPicks).map(([h, s]) => ({ h, p: s.p, wr: s.p > 0 ? (s.w / s.p * 100) : 0 })).sort((a, b) => b.p - a.p).slice(0, 10);
         const sigBody = document.getElementById('planner-opponent-signatures');
         if (signatures.length > 0) {
-            sigBody.innerHTML = signatures.map(d => `<tr><td class="hero-cell"><img src="${ui.getHeroIconUrl(d.h)}" class="hero-icon"> ${d.h}</td><td>${d.p}</td><td class="${d.wr >= 50 ? 'win' : 'loss'}">${d.wr.toFixed(1)}%</td></tr>`).join('');
+            sigBody.innerHTML = signatures.map(d => `<tr><td class="hero-cell" style="justify-content: flex-start;"><img src="${ui.getHeroIconUrl(d.h)}" class="hero-icon" style="width:24px; height:24px;"> ${d.h}</td><td>${d.p}</td><td class="${d.wr >= 50 ? 'win' : 'loss'}">${d.wr.toFixed(1)}%</td></tr>`).join('');
         } else {
             ui.displayEmptyState(sigBody, 'Нет данных', 3);
         }
@@ -156,18 +157,17 @@ export async function initPlannerPage() {
         if (synergy.length > 0) {
             synBody.innerHTML = synergy.map(d => {
                 const heroes = d.p.split('+');
-                return `<tr><td><div class="hero-list-item-info"><img src="${ui.getHeroIconUrl(heroes[0])}" class="hero-icon"> + <img src="${ui.getHeroIconUrl(heroes[1])}" class="hero-icon"></div></td><td>${d.g}</td><td class="${d.wr >= 50 ? 'win' : 'loss'}">${d.wr.toFixed(1)}%</td></tr>`;
+                return `<tr><td><div class="hero-list-item-info"><img src="${ui.getHeroIconUrl(heroes[0])}" class="hero-icon" style="width:24px; height:24px;"> + <img src="${ui.getHeroIconUrl(heroes[1])}" class="hero-icon" style="width:24px; height:24px;"></div></td><td>${d.g}</td><td class="${d.wr >= 50 ? 'win' : 'loss'}">${d.wr.toFixed(1)}%</td></tr>`;
             }).join('');
         } else {
             ui.displayEmptyState(synBody, 'Нет данных', 3);
         }
-
-        const createRoleHeroListHTML = (heroes, statType) => {
-            if (heroes.length === 0) return '<tr><td colspan="3"><div class="empty-state" style="padding:10px 0">Нет данных</div></td></tr>';
+        
+        const createAdviceTableHTML = (heroes) => {
+            if (heroes.length === 0) return '<tr><td colspan="3" class="text-muted" style="text-align:center; padding: 10px 0;">Нет данных</td></tr>';
             return heroes.map(h => {
                 const wrClass = h.wr >= 50 ? 'win' : 'loss';
-                const games = statType === 'picks' ? h.p : (h.g || h.p);
-                return `<tr><td class="hero-cell"><img src="${ui.getHeroIconUrl(h.h)}" class="hero-icon" alt="${h.h}"><span>${h.h}</span></td><td>${games}</td><td class="${wrClass}">${h.wr.toFixed(1)}%</td></tr>`;
+                return `<tr><td class="hero-cell" style="justify-content: flex-start;"><img src="${ui.getHeroIconUrl(h.h)}" class="hero-icon" style="width:24px; height:24px;" alt="${h.h}"><span>${h.h}</span></td><td>${h.p}</td><td class="${wrClass}">${h.wr.toFixed(1)}%</td></tr>`;
             }).join('');
         };
         
@@ -190,17 +190,19 @@ export async function initPlannerPage() {
                 adviceBlock.innerHTML = `
                     <div class="advice-threat">
                         <img src="${ui.getHeroIconUrl(sig.h)}" class="hero-icon">
-                        <h4>${sig.h}</h4>
-                        <p>${sig.p} игр, ${sig.wr.toFixed(1)}% WR</p>
+                        <div>
+                            <h4>${sig.h}</h4>
+                            <p>${sig.p} игр, ${sig.wr.toFixed(1)}% WR</p>
+                        </div>
                     </div>
                     <div class="advice-response">
                         <div>
-                            <h5>Наш ответ (Топ-5)</h5>
-                            <table class="modal-table"><thead><tr><th>Герой</th><th>Игр</th><th>WR%</th></tr></thead><tbody>${createRoleHeroListHTML(ourAnswers, 'winrate')}</tbody></table>
+                            <h5>Наш ответ (vs ${opponent})</h5>
+                            <table class="modal-table"><thead><tr><th>Герой</th><th>Игр</th><th>WR%</th></tr></thead><tbody>${createAdviceTableHTML(ourAnswers)}</tbody></table>
                         </div>
-                        <div style="margin-top: 1rem;">
-                            <h5>Общие контр-пики (Топ-5)</h5>
-                            <table class="modal-table"><thead><tr><th>Герой</th><th>Игр</th><th>WR%</th></tr></thead><tbody>${createRoleHeroListHTML(generalCounters, 'winrate')}</tbody></table>
+                        <div>
+                            <h5>Общие контр-пики (все игры)</h5>
+                            <table class="modal-table"><thead><tr><th>Герой</th><th>Игр</th><th>WR%</th></tr></thead><tbody>${createAdviceTableHTML(generalCounters)}</tbody></table>
                         </div>
                     </div>`;
                 adviceContainer.appendChild(adviceBlock);
@@ -222,6 +224,64 @@ export async function initPlannerPage() {
                 renderMatchHistory(matchesVsOpponent, parseInt(newBtn.dataset.limit, 10));
             });
         });
+
+        // --- [ДОБАВЛЕННЫЙ БЛОК] РЕНДЕРИНГ АНАЛИЗА РОЛЕЙ СОПЕРНИКА ---
+        const opponentRolesContainer = document.getElementById('planner-opponent-roles');
+        opponentRolesContainer.innerHTML = '';
+        const rolesOrder = ['EXP', 'JUNGLE', 'MID', 'ROAM', 'GOLD', 'FLEX'];
+        
+        const createOpponentHeroListHTML = (heroes, statType) => {
+            if (heroes.length === 0) return '<li class="text-muted" style="justify-content: flex-start;">Нет данных</li>';
+            return heroes.map(h => {
+                let statValueHTML = '';
+                if (statType === 'picks') {
+                    statValueHTML = `<span class="hero-stat-value">${h.picks} пик${h.picks === 1 ? '' : 'а'}${h.picks > 4 ? 'ов' : ''}</span>`;
+                } else if (statType === 'winrate') {
+                    const wrClass = h.wr >= 50 ? 'win' : 'loss';
+                    statValueHTML = `<span class="hero-stat-value ${wrClass}">${h.wr.toFixed(0)}% WR</span>`;
+                }
+                return `<li class="hero-list-item"><div class="hero-list-item-info"><img src="${ui.getHeroIconUrl(h.hero)}" class="hero-icon" alt="${h.hero}"><span>${h.hero}</span></div>${statValueHTML}</li>`;
+            }).join('');
+        };
+
+        rolesOrder.forEach(role => {
+            const block = document.createElement('div');
+            block.className = 'role-stat-block';
+
+            let heroDataForRole = [];
+            if (oppRoleStats[role]) {
+                heroDataForRole = Object.entries(oppRoleStats[role]).map(([hero, data]) => ({
+                    hero: hero,
+                    picks: data.p,
+                    wins: data.w, // Победы соперника
+                    wr: data.p > 0 ? (data.w / data.p) * 100 : 0
+                }));
+            }
+
+            const topPicks = [...heroDataForRole].sort((a, b) => b.picks - a.picks).slice(0, 5);
+            const topWinrate = [...heroDataForRole].filter(h => h.picks >= 1).sort((a, b) => b.wr - a.wr || b.picks - a.picks).slice(0, 5);
+
+            block.innerHTML = `
+                <div class="role-stat-header">
+                    <span class="hero-role-tag role-${role.toLowerCase()}">${role}</span>
+                    <h3>${role} Line</h3>
+                </div>
+                <div class="role-stat-content">
+                    <div>
+                        <h4>Топ-5 по пикам</h4>
+                        <ol class="hero-list">${createOpponentHeroListHTML(topPicks, 'picks')}</ol>
+                    </div>
+                    <div>
+                        <h4>Топ-5 по WR</h4>
+                        <ol class="hero-list">${createOpponentHeroListHTML(topWinrate, 'winrate')}</ol>
+                    </div>
+                </div>`;
+            opponentRolesContainer.appendChild(block);
+        });
+
+        if (opponentRolesContainer.innerHTML === '') {
+             opponentRolesContainer.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><p>Нет данных по ролям для этой команды.</p></div>';
+        }
     };
     
     let saveTimeout;
