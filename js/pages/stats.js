@@ -38,38 +38,71 @@ export async function initStatsPage() {
         const roleStats = {}, synergy = {}, matchups = {}, draft = { blue: {}, red: {} };
         
         currentlyFilteredMatches.forEach(match => {
-            const processRolePicks = (picks, isWin) => {
-                (picks || []).forEach(p => {
-                    if (store.getH(p) === heroName && p.role) {
-                        if (!roleStats[p.role]) roleStats[p.role] = { g: 0, w: 0 };
-                        roleStats[p.role].g++;
-                        if (isWin) roleStats[p.role].w++;
+            const ourPicksFull = match.picks?.our_team || [];
+            const oppPicksFull = match.picks?.opponent_team || [];
+            const ourBansFull = match.bans?.our_team || [];
+            const oppBansFull = match.bans?.opponent_team || [];
+
+            const ourSide = match.our_team_side;
+            const oppSide = ourSide === 'blue' ? 'red' : 'blue';
+
+            // [ИСПРАВЛЕНО] Более надежная функция, которая проверяет и пики и баны
+            const processTeamData = (picksData, bansData, isOurTeam, isWin) => {
+                const teamPicks = picksData.map(store.getH);
+                const teamBans = bansData.map(store.getH);
+                const heroWasPicked = teamPicks.includes(heroName);
+                const heroWasBanned = teamBans.includes(heroName);
+
+                // Если героя не было ни в пиках, ни в банах, выходим
+                if (!heroWasPicked && !heroWasBanned) return;
+
+                // 1. Позиция на драфте (считаем всегда)
+                const fullTeamDraft = [...picksData, ...bansData];
+                const heroDraftItem = fullTeamDraft.find(item => store.getH(item) === heroName);
+                if (heroDraftItem) {
+                    const heroSide = isOurTeam ? ourSide : oppSide;
+                    draft[heroSide] = draft[heroSide] || {};
+                    draft[heroSide][heroDraftItem.phase] = (draft[heroSide][heroDraftItem.phase] || 0) + 1;
+                }
+
+                // Если герой не был пикнут, дальнейшую статистику (роли, синергия) не считаем
+                if (!heroWasPicked) return;
+                
+                // 2. Статистика по ролям
+                const heroPickData = picksData.find(p => store.getH(p) === heroName);
+                if (heroPickData && heroPickData.role) {
+                    if (!roleStats[heroPickData.role]) roleStats[heroPickData.role] = { g: 0, w: 0 };
+                    roleStats[heroPickData.role].g++;
+                    // [ИСПРАВЛЕНО] Опечатка heroPickA -> heroPickData
+                    if (isWin) roleStats[heroPickData.role].w++;
+                }
+
+                // 3. Синергия (союзники)
+                teamPicks.forEach(t => {
+                    if (t !== heroName && t) {
+                        synergy[t] = synergy[t] || { g: 0, w: 0 };
+                        synergy[t].g++;
+                        if (isWin) synergy[t].w++;
+                    }
+                });
+                
+                // 4. Противостояние (враги)
+                const enemyPicks = (isOurTeam ? oppPicksFull : ourPicksFull).map(store.getH);
+                enemyPicks.forEach(o => {
+                    if (o) {
+                        matchups[o] = matchups[o] || { g: 0, w: 0 };
+                        matchups[o].g++;
+                        if (isWin) matchups[o].w++;
                     }
                 });
             };
-            processRolePicks(match.picks?.our_team, match.result === 'win');
-            processRolePicks(match.picks?.opponent_team, match.result === 'loss');
 
-            const ourPicks = (match.picks?.our_team || []).map(store.getH);
-            const oppPicks = (match.picks?.opponent_team || []).map(store.getH);
-
-            if (ourPicks.includes(heroName)) {
-                const teamWon = match.result === 'win';
-                ourPicks.forEach(t => { if(t !== heroName && t) { synergy[t] = synergy[t] || {g:0,w:0}; synergy[t].g++; if(teamWon) synergy[t].w++; } });
-                oppPicks.forEach(o => { if(o) { matchups[o] = matchups[o] || {g:0,w:0}; matchups[o].g++; if(teamWon) matchups[o].w++; } });
+            // Вызываем обработку только для команд, соответствующих фильтру
+            if ((currentFilter === 'our_team' || currentFilter === 'overall') && (currentSideFilter === 'all' || currentSideFilter === ourSide)) {
+                processTeamData(ourPicksFull, ourBansFull, true, match.result === 'win');
             }
-            if (oppPicks.includes(heroName)) {
-                const teamWon = match.result === 'loss';
-                oppPicks.forEach(t => { if(t !== heroName && t) { synergy[t] = synergy[t] || {g:0,w:0}; synergy[t].g++; if(teamWon) synergy[t].w++; } });
-                ourPicks.forEach(o => { if(o) { matchups[o] = matchups[o] || {g:0,w:0}; matchups[o].g++; if(teamWon) matchups[o].w++; } });
-            }
-
-            const allDraft = [...(match.picks?.our_team || []), ...(match.bans?.our_team || []), ...(match.picks?.opponent_team || []), ...(match.bans?.opponent_team || [])];
-            const heroDraftItem = allDraft.find(item => typeof item === 'object' && store.getH(item) === heroName);
-            if (heroDraftItem) {
-                const heroSide = [...(match.picks?.our_team || []), ...(match.bans?.our_team || [])].includes(heroDraftItem) ? match.our_team_side : (match.our_team_side === 'blue' ? 'red' : 'blue');
-                draft[heroSide] = draft[heroSide] || {};
-                draft[heroSide][heroDraftItem.phase] = (draft[heroSide][heroDraftItem.phase] || 0) + 1;
+            if ((currentFilter === 'opponent_team' || currentFilter === 'overall') && (currentSideFilter === 'all' || currentSideFilter === oppSide)) {
+                processTeamData(oppPicksFull, oppBansFull, false, match.result === 'loss');
             }
         });
 
