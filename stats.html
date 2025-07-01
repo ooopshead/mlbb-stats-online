@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статистика - MLBB Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">MLBB Stats</div>
+        <nav>
+    <a href="dashboard.html">Дашборд</a>
+    <a href="add-match.html">Добавить матч</a>
+    <a href="stats.html">Статистика</a>
+    <a href="planner.html">Аналитика</a>
+    <a href="draft-helper.html">Планер</a> <!-- Вот она, наша новая страница -->
+    <a href="matchup.html">Противостояние</a>
+    <a href="history.html">История</a>
+</nav>
+        <button id="theme-toggle" title="Сменить тему">🎨</button>
+    </header>
+
+    <main class="container">
+        <h1>Статистика по героям</h1>
+        
+         <div class="controls card">
+            <div class="filter-group">
+                <span>Команда:</span>
+                <button class="btn active" data-filter="overall">Общая</button>
+                <button class="btn" data-filter="our_team">Наша команда</button>
+                <button class="btn" data-filter="opponent_team">Соперники</button>
+            </div>
+            <div class="filter-group">
+                <span>Сторона:</span>
+                <button class="btn active" data-side-filter="all">Все</button>
+                <button class="btn" data-side-filter="blue">Синяя</button>
+                <button class="btn" data-side-filter="red">Красная</button>
+            </div>
+            <div class="filter-group">
+                <span>Тип матча:</span>
+                <button class="btn active" data-type-filter="all">Все</button>
+                <button class="btn" data-type-filter="scrim">Скримы</button>
+                <button class="btn" data-type-filter="tournament">Турниры</button>
+            </div>
+            <div class="filter-group">
+                <label for="opponent-filter">Соперник:</label>
+                <select id="opponent-filter">
+                    <option value="all">Все команды</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="role-filter">Роль:</label>
+                <select id="role-filter">
+                    <option value="all">Все роли</option>
+                    <option value="EXP">EXP</option>
+                    <option value="JUNGLE">JUNGLE</option>
+                    <option value="MID">MID</option>
+                    <option value="ROAM">ROAM</option>
+                    <option value="GOLD">GOLD</option>
+                    <option value="FLEX">FLEX</option>
+                </select>
+            </div>
+            <div class="filter-group-column">
+                <span>Патчи:</span>
+                <div id="patch-filter-container" class="filter-checkbox-group">
+                    <label for="patch-cb-none">
+                        <input type="checkbox" id="patch-cb-none" value="no_patch">
+                        Без патча
+                    </label>
+                    <!-- Динамические чекбоксы патчей будут вставлены сюда -->
+                </div>
+            </div>
+            <button id="clear-data-btn" class="btn btn-danger">Очистить данные</button>
+        </div>
+
+        <div class="table-container card">
+            <table id="stats-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort-key="hero" style="text-align: left;">Герой</th>
+                        <th class="sortable" data-sort-key="presence">Присутствие</th>
+                        <th class="sortable" data-sort-key="totalGames">Игр</th>
+                        <th class="sortable" data-sort-key="wins">В-П</th>
+                        <th class="sortable" data-sort-key="winrate">WR%</th>
+                        <th class="sortable" data-sort-key="picks">Пики</th>
+                        <th class="sortable" data-sort-key="bans">Баны</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-tbody">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="synergy-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-hero-name"></h2>
+                <button id="modal-close-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body hero-stats">
+                <div class="column">
+                    <h3>Статистика по ролям</h3>
+                    <table class="modal-table">
+                        <thead><tr><th>Роль</th><th>Игр</th><th>В-П</th><th>WR%</th></tr></thead>
+                        <tbody id="role-stats-body"></tbody>
+                    </table>
+                </div>
+                <div class="column">
+                    <h3>Синергия (Топ-10)</h3>
+                    <table class="modal-table">
+                        <thead><tr><th>Герой</th><th>Игр</th><th>В-П</th><th>WR%</th></tr></thead>
+                        <tbody id="synergy-table-body"></tbody>
+                    </table>
+                </div>
+                <div class="column">
+                    <h3>Противостояние</h3>
+                    <h4>Успех против (Топ-5)</h4>
+                    <table class="modal-table">
+                         <thead><tr><th>Герой</th><th>Игр</th><th>В-П</th><th>WR%</th></tr></thead>
+                        <tbody id="best-matchup-body"></tbody>
+                    </table>
+                    <h4 style="margin-top: 16px;">Слабость против (Топ-5)</h4>
+                     <table class="modal-table">
+                         <thead><tr><th>Герой</th><th>Игр</th><th>В-П</th><th>WR%</th></tr></thead>
+                        <tbody id="worst-matchup-body"></tbody>
+                    </table>
+                </div>
+                <div class="column">
+                    <h3>Позиция на драфте</h3>
+                    <table class="modal-table">
+                        <thead><tr><th>Фаза</th><th>Синие</th><th>Красные</th></tr></thead>
+                        <tbody id="draft-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast-container"></div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

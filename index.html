@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - MLBB Stats</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode"> <!-- Можно добавить dark-mode для соответствия теме -->
+    <main class="container" style="max-width: 400px; margin-top: 50px;">
+        <div class="card">
+            <h1 style="text-align: center; margin-bottom: 24px;">MLBB Stats</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 16px;">Войти</button>
+                <p id="error-message" style="color: var(--loss-light); text-align: center; margin-top: 10px; min-height: 1.2em;"></p>
+            </form>
+            <hr>
+            <p style="text-align: center; cursor: pointer;">
+                <a href="#" id="toggle-register">Нет аккаунта? <strong>Зарегистрироваться</strong></a>
+            </p>
+        </div>
+    </main>
+    
+    <div id="toast-container"></div>
+    <!-- Подключаем auth.js как модуль -->
+    <script type="module" src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помощник драфта - MLBB Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">MLBB Stats</div>
+        <nav>
+            <a href="dashboard.html">Дашборд</a>
+            <a href="add-match.html">Добавить матч</a>
+            <a href="stats.html">Статистика</a>
+            <a href="planner.html">Аналитика</a>
+            <a href="draft-helper.html" class="active">Планер</a>
+            <a href="matchup.html">Противостояние</a>
+            <a href="history.html">История</a>
+        </nav>
+        <button id="theme-toggle" title="Сменить тему">🎨</button>
+    </header>
+
+    <main class="container">
+        <h1>Планер Драфта</h1>
+        
+        <!-- Блок управления -->
+        <div class="controls card">
+            <div class="filter-group">
+                <label for="helper-opponent-select">Соперник:</label>
+                <select id="helper-opponent-select">
+                    <option value="">-- Выберите команду --</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="helper-strategy-select">Стратегия:</label>
+                <select id="helper-strategy-select" disabled>
+                    <option value="">-- Сначала выберите соперника --</option>
+                </select>
+            </div>
+            <div class="strategy-controls">
+                <button id="new-strategy-btn" class="btn" disabled>+ Новая стратегия</button>
+                <button id="edit-strategy-btn" class="btn" disabled>Редактировать</button>
+                <button id="delete-strategy-btn" class="btn btn-danger" disabled>Удалить</button>
+                <!-- [НОВАЯ КНОПКА] -->
+                <button id="launch-helper-btn" class="btn btn-primary" disabled style="margin-left: auto; margin-top: 0;">Запустить Помощник</button>
+            </div>
+        </div>
+
+        <!-- Конструктор стратегий -->
+        <div id="strategy-builder-container" class="card" style="display: none;">
+            <h2 id="strategy-builder-title">Создание новой стратегии</h2>
+            <div class="form-group">
+                <label for="strategy-name-input">Название стратегии</label>
+                <input type="text" id="strategy-name-input" placeholder="Напр: Агрессия через лес, Защитный сетап">
+            </div>
+            <hr>
+            <div id="strategy-rules-container" class="strategy-rules-grid">
+                <!-- Сюда JS будет вставлять правила для каждой фазы драфта -->
+            </div>
+            <div class="builder-actions">
+                <button id="save-strategy-btn" class="btn btn-primary">Сохранить стратегию</button>
+                <button id="cancel-strategy-btn" class="btn">Отмена</button>
+            </div>
+        </div>
+
+        <!-- Отображение выбранной стратегии -->
+        <div id="strategy-display-container" class="card" style="display: none;">
+            <!-- Сюда JS будет выводить сохраненную стратегию для просмотра -->
+        </div>
+
+        <!-- Заглушка, когда ничего не выбрано -->
+        <div id="helper-placeholder" class="card empty-state">
+            <p>Выберите команду соперника, чтобы создать или загрузить стратегию драфта.</p>
+        </div>
+
+    </main>
+    
+    <!-- [НОВЫЙ КОД] Модальное окно для Интерактивного Помощника Драфта -->
+    <div id="interactive-helper-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content interactive-helper">
+            <div class="modal-header">
+                <h2 id="interactive-helper-title">Интерактивный Помощник Драфта</h2>
+                <button id="interactive-helper-close-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="interactive-helper-grid">
+                    <!-- Левая колонка: Драфт -->
+                    <div class="draft-simulation-column">
+                        <div class="draft-sides-container">
+                            <!-- Синяя сторона -->
+                            <div class="draft-side-block blue-side">
+                                <div class="draft-side-header">
+                                    <h3>Синяя сторона</h3>
+                                    <div class="side-selector">
+                                        <input type="radio" id="helper_our_side_is_blue" name="helper_our_team_side" value="blue" checked>
+                                        <label for="helper_our_side_is_blue">Это мы</label>
+                                    </div>
+                                </div>
+                                <div class="draft-slots" id="helper-blue-slots"></div>
+                            </div>
+                            <!-- Красная сторона -->
+                            <div class="draft-side-block red-side">
+                                 <div class="draft-side-header">
+                                    <h3>Красная сторона</h3>
+                                    <div class="side-selector">
+                                        <input type="radio" id="helper_our_side_is_red" name="helper_our_team_side" value="red">
+                                        <label for="helper_our_side_is_red">Это мы</label>
+                                    </div>
+                                </div>
+                                <div class="draft-slots" id="helper-red-slots"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка: Подсказки и Аналитика -->
+                    <div class="suggestions-column">
+                        <div class="card suggestion-card">
+                            <h3><span id="suggestion-phase-title">...</span></h3>
+                            <div id="suggestions-content">
+                                <p class="text-muted">Ожидание начала драфта...</p>
+                            </div>
+                        </div>
+                        <div class="card analysis-card">
+                            <h3>Live-аналитика</h3>
+                            <div id="live-analysis-content">
+                                <p class="text-muted">Аналитика появится по ходу драфта.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="autocomplete-container" class="autocomplete-suggestions"></div>
+    <div id="toast-container"></div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

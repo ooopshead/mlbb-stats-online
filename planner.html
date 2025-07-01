@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Планер - MLBB Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">MLBB Stats</div>
+        <nav>
+    <a href="dashboard.html">Дашборд</a>
+    <a href="add-match.html">Добавить матч</a>
+    <a href="stats.html">Статистика</a>
+    <a href="planner.html">Аналитика</a>
+    <a href="draft-helper.html">Планер</a> <!-- Вот она, наша новая страница -->
+    <a href="matchup.html">Противостояние</a>
+    <a href="history.html">История</a>
+</nav>
+        <button id="theme-toggle" title="Сменить тему">🎨</button>
+    </header>
+
+    <main class="container">
+        <h1>Планер матча</h1>
+        
+        <div class="controls card">
+            <div class="filter-group">
+                <label for="planner-opponent-select">Выберите соперника для анализа:</label>
+                <select id="planner-opponent-select">
+                    <option value="">-- Не выбрано --</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="planner-content" style="display: none;">
+            <div class="planner-grid-new">
+                <!-- План на игру -->
+                <div class="card planner-card-new full-width">
+                    <h3>План на игру против <span class="planner-opponent-name"></span></h3>
+                    <textarea id="game-plan-notes" placeholder="Опишите здесь вашу стратегию, ключевые пики, баны и цели на игру..."></textarea>
+                </div>
+                
+                <!-- Анализ H2H и по сторонам -->
+                <div class="card planner-card-new">
+                    <h3>Статистика H2H</h3>
+                    <div id="planner-h2h-stats" class="stats-summary-grid"></div>
+                    <hr>
+                    <h3>Анализ по сторонам</h3>
+                    <div id="planner-side-stats" class="stats-summary-grid side-stats"></div>
+                </div>
+
+                <!-- Сигнатурные герои соперника -->
+                <div class="card planner-card-new">
+                    <h3>Сигнатурные герои <span class="planner-opponent-name"></span> (Топ-10)</h3>
+                    <div class="table-container-simple">
+                         <table class="modal-table">
+                            <thead><tr><th>Герой</th><th>Пиков</th><th>WR%</th></tr></thead>
+                            <tbody id="planner-opponent-signatures"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Сильнейшие дуэты соперника -->
+                 <div class="card planner-card-new">
+                    <h3>Сильнейшие дуэты <span class="planner-opponent-name"></span> (Топ-10)</h3>
+                     <div class="table-container-simple">
+                        <table class="modal-table">
+                            <thead><tr><th>Герои</th><th>Игр</th><th>WR%</th></tr></thead>
+                            <tbody id="planner-opponent-synergy"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Анализ ролей соперника -->
+                <div class="card planner-card-new full-width">
+                    <h3>Анализ ролей <span class="planner-opponent-name"></span></h3>
+                    <div id="planner-opponent-roles" class="dashboard-role-stats-container">
+                        <!-- Сюда будет вставлена аналитика по ролям соперника -->
+                    </div>
+                </div>
+                
+                <!-- История встреч (НОВЫЙ БЛОК) -->
+                <div class="card planner-card-new full-width">
+                    <h3>История встреч</h3>
+                    <div class="controls" style="padding: 0; box-shadow: none; border: none; justify-content: flex-start; margin-bottom: 16px;">
+                        <div class="filter-group">
+                            <span>Показать последние:</span>
+                            <button class="btn active" data-limit="5">5 игр</button>
+                            <button class="btn" data-limit="10">10 игр</button>
+                            <button class="btn" data-limit="15">15 игр</button>
+                            <button class="btn" data-limit="20">20 игр</button>
+                        </div>
+                    </div>
+                    <div id="planner-match-history">
+                        <!-- Сюда будут вставляться карточки матчей -->
+                    </div>
+                </div>
+
+                <!-- Советы по пикам -->
+                 <div class="card planner-card-new full-width">
+                    <h3>Советы по пикам (против Топ-10 угроз)</h3>
+                    <div id="planner-pick-advice" class="pick-advice-container-new">
+                        <!-- Сюда будут вставлены советы в новом формате -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="planner-placeholder" class="card empty-state">
+            <p>Выберите команду соперника, чтобы загрузить аналитику и составить план на игру.</p>
+        </div>
+    </main>
+    
+    <div id="toast-container"></div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
