@@ -14,14 +14,14 @@
     <header>
         <div class="logo">MLBB Stats</div>
         <nav>
-    <a href="dashboard.html">Дашборд</a>
-    <a href="add-match.html">Добавить матч</a>
-    <a href="stats.html">Статистика</a>
-    <a href="planner.html">Аналитика</a>
-    <a href="draft-helper.html">Планер</a> <!-- Вот она, наша новая страница -->
-    <a href="matchup.html">Противостояние</a>
-    <a href="history.html">История</a>
-</nav>
+            <a href="dashboard.html">Дашборд</a>
+            <a href="add-match.html">Добавить матч</a>
+            <a href="stats.html">Статистика</a>
+            <a href="planner.html">Аналитика</a>
+            <a href="draft-helper.html">Планер</a>
+            <a href="matchup.html">Противостояние</a>
+            <a href="history.html" class="active">История</a>
+        </nav>
         <button id="theme-toggle" title="Сменить тему">🎨</button>
     </header>
 
@@ -44,8 +44,8 @@
                 </select>
             </div>
             <div class="data-management-controls">
-                <button id="export-offline-data-btn" class="btn">Экспорт из оффлайн-версии</button>
-                <label for="import-file-input" class="btn">Импорт в онлайн-версию</label>
+                <button id="export-offline-data-btn" class="btn">Экспортировать данные</button>
+                <label for="import-file-input" class="btn">Импортировать данные</label>
                 <input type="file" id="import-file-input" accept=".json" style="display: none;">
             </div>
         </div>
@@ -82,9 +82,7 @@
                             <select id="edit-match_patch" required></select>
                         </div>
                     </div>
-                    <!-- [ИСПРАВЛЕНО] Добавлен недостающий HTML-код формы -->
                     <div class="form-grid">
-                        <!-- Блок Синей Стороны -->
                         <div class="team-block team-block-blue">
                             <div class="team-header">
                                 <h2>Синяя сторона</h2>
@@ -109,7 +107,6 @@
                                 <div class="draft-input-item"><span class="draft-phase">P5</span><input type="text" class="hero-input edit-blue-pick" autocomplete="off"><select class="hero-role-select edit-blue-pick-role"><option value="" disabled selected>Роль</option><option value="EXP">EXP</option><option value="JUNGLE">JUNGLE</option><option value="MID">MID</option><option value="ROAM">ROAM</option><option value="GOLD">GOLD</option></select></div>
                             </div>
                         </div>
-                        <!-- Блок Красной Стороны -->
                         <div class="team-block team-block-red">
                             <div class="team-header">
                                 <h2>Красная сторона</h2>
@@ -135,7 +132,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- / [ИСПРАВЛЕНО] -->
                     <div class="form-group" style="margin-top: 24px;"><label for="edit-match-notes">Заметки к матчу</label><textarea id="edit-match-notes" rows="4"></textarea></div>
                     <div class="result-block"><h3>Результат матча</h3><div class="radio-group"><input type="radio" id="edit_win" name="edit_result" value="win" required><label for="edit_win" class="result-label win">Победа</label><input type="radio" id="edit_loss" name="edit_result" value="loss"><label for="edit_loss" class="result-label loss">Поражение</label></div></div>
                     <button type="submit" class="btn btn-primary">Сохранить изменения</button>
@@ -144,7 +140,6 @@
         </div>
     </div>
     
-    <!-- Модальное окно для анализа драфта -->
     <div id="analysis-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content large">
             <div class="modal-header">
@@ -152,35 +147,22 @@
                 <button id="analysis-modal-close-btn" class="close-btn">&times;</button>
             </div>
             <div class="modal-body analysis-body">
-                <!-- Блок 1: Ключевые факторы -->
                 <div class="analysis-section">
                     <h3>Ключевые факторы матча</h3>
-                    <div id="analysis-key-factors" class="key-factors-grid">
-                        <!-- Сюда вставим MVP, Угрозу и т.д. -->
-                    </div>
+                    <div id="analysis-key-factors" class="key-factors-grid"></div>
                 </div>
-
-                <!-- Блок 2: Общий вердикт -->
                 <div class="analysis-section">
                     <h3>Общий вердикт по драфту</h3>
-                    <div id="analysis-verdict" class="verdict-grid">
-                        <!-- Сюда вставим общий анализ -->
-                    </div>
+                    <div id="analysis-verdict" class="verdict-grid"></div>
                 </div>
-
-                <!-- Блок 3: Детальный анализ команд -->
                 <div class="analysis-section analysis-grid">
                     <div class="team-analysis-column">
                         <h3 class="team-title-blue">Наша команда</h3>
-                        <div id="analysis-our-team">
-                            <!-- Анализ наших героев -->
-                        </div>
+                        <div id="analysis-our-team"></div>
                     </div>
                     <div class="team-analysis-column">
                         <h3 class="team-title-red">Команда соперника</h3>
-                        <div id="analysis-opponent-team">
-                            <!-- Анализ героев соперника -->
-                        </div>
+                        <div id="analysis-opponent-team"></div>
                     </div>
                 </div>
             </div>

@@ -8,7 +8,6 @@ export function initHistoryPage() {
 
     ui.initAutocomplete('#edit-match-form .hero-input');
 
-    // DOM элементы
     const opponentFilter = document.getElementById('history-opponent-filter');
     const typeFilter = document.getElementById('history-type-filter');
     const editModal = document.getElementById('edit-match-modal');
@@ -49,12 +48,11 @@ export function initHistoryPage() {
             return;
         }
         
-        // [ИСПРАВЛЕНО] Функция-помощник с добавлением класса для банов
         const draftToHtml = (draft, isPick) => (draft || []).map(item => {
             const hero = store.getH(item);
             const phase = typeof item === 'object' && item.phase ? `<span class="text-muted">(${item.phase})</span>` : '';
             const roleTag = isPick && item.role ? `<span class="hero-role-tag role-${item.role.toLowerCase()}">${item.role}</span>` : '';
-            const liClass = isPick ? '' : 'class="banned-hero"'; // Добавляем класс для банов
+            const liClass = isPick ? '' : 'class="banned-hero"';
 
             return `<li ${liClass}><img src="${ui.getHeroIconUrl(hero)}" class="hero-icon" alt="${hero}" title="${hero}"> ${hero} ${phase} ${roleTag}</li>`;
         }).join('');
@@ -66,7 +64,6 @@ export function initHistoryPage() {
             const ourSide = match.our_team_side;
             const oppSide = ourSide === 'blue' ? 'red' : 'blue';
 
-            // Используем оригинальную структуру, которая работала
             const ourColumnHtml = `
                 <div class="draft-column">
                     <h2>Наша команда <span class="team-side-badge team-side-${ourSide}">${ourSide}</span></h2>
@@ -91,7 +88,6 @@ export function initHistoryPage() {
 
             const notesHtml = match.notes ? `<div class="match-notes"><h4>Заметки:</h4><p>${match.notes.replace(/\n/g, '<br>')}</p></div>` : '';
             
-            // [ИСПРАВЛЕНО] Используем новые SVG иконки
             card.innerHTML = `
                 <div class="card-header">
                     <div class="opponent">vs ${match.opponent_team}</div>
@@ -107,7 +103,7 @@ export function initHistoryPage() {
                         </button>
                         <button class="btn-icon analysis-match-btn" data-match-id="${match.id}" title="Анализ драфта">
                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
-                        </button>
+                        </button> 
                     </div>
                 </div>
                 <div class="card-body">
@@ -122,8 +118,6 @@ export function initHistoryPage() {
             historyContainer.appendChild(card);
         });
     };
-    
-    // ... остальная часть файла (openEditModal, openDraftAnalysisModal, обработчики событий) остается без изменений ...
     
     const openEditModal = async (matchId) => {
         const match = allMatches.find(m => m.id == matchId);
@@ -434,9 +428,35 @@ export function initHistoryPage() {
     
     opponentFilter.addEventListener('change', renderHistory);
     typeFilter.addEventListener('change', renderHistory);
-    exportBtn.addEventListener('click', () => {
-        ui.showToast('Экспорт данных из оффлайн-версии не поддерживается в онлайн-режиме.', 'info');
+
+    exportBtn.addEventListener('click', async () => {
+        ui.showToast('Подготовка данных для экспорта...', 'info');
+    
+        const userSettings = await dataService.getUserSettings();
+    
+        const dataToExport = {
+            matches: allMatches,
+            team_info: userSettings.team_info,
+            patches: userSettings.patches
+        };
+    
+        if (!dataToExport.matches || dataToExport.matches.length === 0) {
+            ui.showToast('Нет матчей для экспорта.', 'info');
+            return;
+        }
+    
+        const dataStr = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mlbb-stats-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     });
+
     importInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (!file) return;
