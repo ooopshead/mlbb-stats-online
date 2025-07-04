@@ -429,22 +429,28 @@ export function initHistoryPage() {
     opponentFilter.addEventListener('change', renderHistory);
     typeFilter.addEventListener('change', renderHistory);
 
+    // ----- [ ИСПРАВЛЕННЫЙ БЛОК ЭКСПОРТА ] -----
     exportBtn.addEventListener('click', async () => {
         ui.showToast('Подготовка данных для экспорта...', 'info');
     
-        const userSettings = await dataService.getUserSettings();
+        // Запрашиваем все данные из онлайн-базы, используя существующие сервисы
+        const [matches, userSettings] = await Promise.all([
+            dataService.getMatches(),
+            dataService.getUserSettings()
+        ]);
     
         const dataToExport = {
-            matches: allMatches,
+            matches: matches,
             team_info: userSettings.team_info,
             patches: userSettings.patches
         };
     
         if (!dataToExport.matches || dataToExport.matches.length === 0) {
-            ui.showToast('Нет матчей для экспорта.', 'info');
+            ui.showToast('Нет данных для экспорта.', 'info');
             return;
         }
     
+        // Стандартная процедура создания и скачивания файла
         const dataStr = JSON.stringify(dataToExport, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -456,6 +462,8 @@ export function initHistoryPage() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     });
+    // ----- [ КОНЕЦ ИСПРАВЛЕННОГО БЛОКА ] -----
+
 
     importInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
